@@ -1,13 +1,9 @@
 const Total = ({ parts }) => {
-  const sumOfExercises = () => {
-    let sum = 0;
-    for (const i in parts) sum += parts[i].exercises;
-    return sum;
-  };
+  const total = parts.reduce((sum, part) => (sum += part.exercises), 0);
   return (
     <p>
       Number of exercises
-      {sumOfExercises()}
+      {total}
     </p>
   );
 };
