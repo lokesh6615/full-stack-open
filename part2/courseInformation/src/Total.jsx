@@ -1,10 +1,13 @@
-const Total = (props) => {
+const Total = ({ parts }) => {
+  const sumOfExercises = () => {
+    let sum = 0;
+    for (const i in parts) sum += parts[i].exercises;
+    return sum;
+  };
   return (
     <p>
       Number of exercises
-      {props.parts[0].exercises +
-        props.parts[1].exercises +
-        props.parts[2].exercises}
+      {sumOfExercises()}
     </p>
   );
 };

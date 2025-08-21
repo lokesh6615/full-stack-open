@@ -4,7 +4,7 @@ const Content = ({ parts }) => {
   return (
     <div>
       {parts.map((element) => {
-        return <Part part={element} />;
+        return <Part key={element.id} part={element} />;
       })}
     </div>
   );
