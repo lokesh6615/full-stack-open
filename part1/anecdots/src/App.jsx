@@ -12,6 +12,7 @@ const App = () => {
     6: 0,
     7: 0,
   });
+  const [maxIndex, setMaxIndex] = useState(0);
 
   const getRandom = (max) => {
     console.log("inside random");
@@ -27,6 +28,15 @@ const App = () => {
     const votesCopy = { ...votes };
     votesCopy[selected] += 1;
     setVotes(votesCopy);
+    const newMaxIndex = getMaxIndex(votesCopy);
+    setMaxIndex(newMaxIndex);
+  };
+  const getMaxIndex = (votesCopy) => {
+    let maxIdx = 0;
+    Object.keys(votesCopy).forEach((element) => {
+      if (votesCopy[element] > votesCopy[maxIdx]) maxIdx = Number(element);
+    });
+    return maxIdx;
   };
   const anecdotes = [
     "If it hurts, do it more often.",
@@ -42,7 +52,16 @@ const App = () => {
   return (
     <div>
       <p>
+        <b>Anecdote of the day</b>
+      </p>
+      <p>
         {anecdotes[selected]} has {votes[selected]} votes
+      </p>
+      <p>
+        <b>Anecdote with most votes</b>
+      </p>
+      <p>
+        {anecdotes[maxIndex]} has {votes[maxIndex]} votes
       </p>
       <button onClick={increaseVotes}>vote</button>
       <button onClick={getAnecdotes}>next anecdotes</button>
