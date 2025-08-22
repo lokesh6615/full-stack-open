@@ -6,6 +6,12 @@ const App = () => {
 
   const addPerson = (e) => {
     e.preventDefault();
+    const personBool = persons.some((person) => person.name === newName);
+    if (personBool) {
+      setNewName("");
+      alert(`${newName} is already added to phone book`);
+      return;
+    }
     const newPerson = { name: newName };
     setPersons([...persons, newPerson]);
     setNewName("");
