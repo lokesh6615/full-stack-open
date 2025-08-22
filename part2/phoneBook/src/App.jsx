@@ -17,7 +17,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newPhoneNo, setNewPhoneNo] = useState("");
   const [filter, setFilter] = useState("");
-  const [statusMessage, setStatusMessage] = useState(null);
+  const [statusMessage, setStatusMessage] = useState({});
 
   const addPerson = (e) => {
     e.preventDefault();
@@ -38,8 +38,12 @@ const App = () => {
               person.id === personBool.id ? response : person
             )
           );
-          setStatusMessage("Phone Number updated successfully");
-          setTimeout(() => setStatusMessage(null), 3000);
+          const status = {
+            message: "Phone Number updated successfully",
+            type: "success",
+          };
+          setStatusMessage(status);
+          setTimeout(() => setStatusMessage({}), 3000);
         });
         setNewName("");
         setNewPhoneNo("");
@@ -50,8 +54,12 @@ const App = () => {
       .httpPost(newPerson)
       .then((response) => {
         setPersons([...persons, response]);
-        setStatusMessage("Phone Number added successfully");
-        setTimeout(() => setStatusMessage(null), 3000);
+        const status = {
+          message: "Phone Number added successfully",
+          type: "success",
+        };
+        setStatusMessage(status);
+        setTimeout(() => setStatusMessage({}), 3000);
       })
       .catch((err) => {
         console.log("Error creating new person", err);
@@ -62,11 +70,37 @@ const App = () => {
 
   const handleDelete = (id) => {
     const personToDelete = persons.find((person) => person.id === id);
+    if (!personToDelete) {
+      const status = {
+        message: "This information is already deleted",
+        type: "fail",
+      };
+      setStatusMessage(status);
+      setTimeout(() => setStatusMessage({}), 3000);
+      return;
+    }
     const conformation = confirm(`Delete ${personToDelete.name} ?`);
-    if (conformation) notes.httpDelete(id);
-    setPersons(persons.filter((person) => person.id !== id));
-    setStatusMessage("Phone Number deleted successfully");
-    setTimeout(() => setStatusMessage(null), 3000);
+    if (conformation) {
+      notes
+        .httpDelete(id)
+        .then(() => {
+          setPersons(persons.filter((person) => person.id !== id));
+          const status = {
+            message: "Phone Number deleted successfully",
+            type: "success",
+          };
+          setStatusMessage(status);
+          setTimeout(() => setStatusMessage({}), 3000);
+        })
+        .catch((err) => {
+          const status = {
+            message: "This information is already deleted",
+            type: "fail",
+          };
+          setStatusMessage(status);
+          setTimeout(() => setStatusMessage({}), 3000);
+        });
+    }
   };
 
   const filteredPersons =
