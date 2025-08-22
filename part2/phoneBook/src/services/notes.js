@@ -15,4 +15,10 @@ const httpDelete = async (id) => {
     .then((response) => response.data);
 };
 
-export default { httpGet, httpPost, httpDelete };
+const httpPut = async (id, payload) => {
+  return await axios
+    .put(`${baseUrl}/${id}`, payload)
+    .then((response) => response.data);
+};
+
+export default { httpGet, httpPost, httpDelete, httpPut };

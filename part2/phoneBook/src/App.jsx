@@ -19,17 +19,31 @@ const App = () => {
 
   const addPerson = (e) => {
     e.preventDefault();
-    const personBool = persons.some((person) => person.name === newName);
-    if (personBool) {
-      setNewName("");
-      alert(`${newName} is already added to phone book`);
-      return;
-    }
+    const personBool = persons.find((person) => person.name === newName);
     const newPerson = {
       id: String(persons.length + 1),
       name: newName,
       number: newPhoneNo,
     };
+    if (personBool) {
+      const conformation = confirm(
+        `${newName} is already added to phonebook , replace the old number with the new one ?`
+      );
+      if (conformation) {
+        notes
+          .httpPut(personBool.id, newPerson)
+          .then((response) =>
+            setPersons(
+              persons.map((person) =>
+                person.id === personBool.id ? response : person
+              )
+            )
+          );
+        setNewName("");
+        setNewPhoneNo("");
+        return;
+      }
+    }
     notes
       .httpPost(newPerson)
       .then((response) => {
