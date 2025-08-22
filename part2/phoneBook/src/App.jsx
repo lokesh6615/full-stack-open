@@ -4,6 +4,7 @@ import Filter from "./components/Filter";
 import Form from "./components/Form";
 import Persons from "./components/Persons";
 import notes from "./services/notes";
+import Notification from "./components/Notification";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -16,6 +17,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newPhoneNo, setNewPhoneNo] = useState("");
   const [filter, setFilter] = useState("");
+  const [statusMessage, setStatusMessage] = useState(null);
 
   const addPerson = (e) => {
     e.preventDefault();
@@ -30,15 +32,15 @@ const App = () => {
         `${newName} is already added to phonebook , replace the old number with the new one ?`
       );
       if (conformation) {
-        notes
-          .httpPut(personBool.id, newPerson)
-          .then((response) =>
-            setPersons(
-              persons.map((person) =>
-                person.id === personBool.id ? response : person
-              )
+        notes.httpPut(personBool.id, newPerson).then((response) => {
+          setPersons(
+            persons.map((person) =>
+              person.id === personBool.id ? response : person
             )
           );
+          setStatusMessage("Phone Number updated successfully");
+          setTimeout(() => setStatusMessage(null), 3000);
+        });
         setNewName("");
         setNewPhoneNo("");
         return;
@@ -48,6 +50,8 @@ const App = () => {
       .httpPost(newPerson)
       .then((response) => {
         setPersons([...persons, response]);
+        setStatusMessage("Phone Number added successfully");
+        setTimeout(() => setStatusMessage(null), 3000);
       })
       .catch((err) => {
         console.log("Error creating new person", err);
@@ -61,6 +65,8 @@ const App = () => {
     const conformation = confirm(`Delete ${personToDelete.name} ?`);
     if (conformation) notes.httpDelete(id);
     setPersons(persons.filter((person) => person.id !== id));
+    setStatusMessage("Phone Number deleted successfully");
+    setTimeout(() => setStatusMessage(null), 3000);
   };
 
   const filteredPersons =
@@ -73,6 +79,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={statusMessage} />
       <Filter setFilter={setFilter} />
       <br />
       <Form
