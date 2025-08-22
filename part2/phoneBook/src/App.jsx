@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Filter from "./components/Filter";
 import Form from "./components/Form";
 import Persons from "./components/Persons";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { id: 1, name: "Arto Hellas", phoneNo: "8927474363" },
-  ]);
+  const [persons, setPersons] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:3001/persons")
+      .then((response) => setPersons(response.data))
+      .catch((err) => console.log("Error fetching persons", err));
+  }, []);
   const [newName, setNewName] = useState("");
   const [newPhoneNo, setNewPhoneNo] = useState("");
   const [filter, setFilter] = useState("");
@@ -22,7 +27,7 @@ const App = () => {
     const newPerson = {
       id: persons.length + 1,
       name: newName,
-      phoneNo: newPhoneNo,
+      number: newPhoneNo,
     };
     setPersons([...persons, newPerson]);
     setNewName("");
