@@ -29,7 +29,14 @@ const App = () => {
       name: newName,
       number: newPhoneNo,
     };
-    setPersons([...persons, newPerson]);
+    axios
+      .post("http://localhost:3001/persons", newPerson)
+      .then((response) => {
+        setPersons([...persons, response.data]);
+      })
+      .catch((err) => {
+        console.log("Error creating new person", err);
+      });
     setNewName("");
     setNewPhoneNo("");
   };
@@ -54,8 +61,10 @@ const App = () => {
         newPhoneNo={newPhoneNo}
       />
       <br />
-
-      <Persons filteredPersons={filteredPersons} />
+      <h2>Numbers</h2>
+      {filteredPersons.map((person) => (
+        <Persons key={person.id} person={person} />
+      ))}
     </div>
   );
 };
