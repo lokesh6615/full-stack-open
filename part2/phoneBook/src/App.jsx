@@ -26,7 +26,7 @@ const App = () => {
       return;
     }
     const newPerson = {
-      id: persons.length + 1,
+      id: String(persons.length + 1),
       name: newName,
       number: newPhoneNo,
     };
@@ -40,6 +40,13 @@ const App = () => {
       });
     setNewName("");
     setNewPhoneNo("");
+  };
+
+  const handleDelete = (id) => {
+    const personToDelete = persons.find((person) => person.id === id);
+    const conformation = confirm(`Delete ${personToDelete.name} ?`);
+    if (conformation) notes.httpDelete(id);
+    setPersons(persons.filter((person) => person.id !== id));
   };
 
   const filteredPersons =
@@ -64,7 +71,7 @@ const App = () => {
       <br />
       <h2>Numbers</h2>
       {filteredPersons.map((person) => (
-        <Persons key={person.id} person={person} />
+        <Persons key={person.id} person={person} onDelete={handleDelete} />
       ))}
     </div>
   );

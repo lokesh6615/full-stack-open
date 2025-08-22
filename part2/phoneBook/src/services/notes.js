@@ -9,4 +9,10 @@ const httpPost = async (payload) => {
   return await axios.post(baseUrl, payload).then((response) => response.data);
 };
 
-export default { httpGet, httpPost };
+const httpDelete = async (id) => {
+  return await axios
+    .delete(`${baseUrl}/${id}`)
+    .then((response) => response.data);
+};
+
+export default { httpGet, httpPost, httpDelete };
