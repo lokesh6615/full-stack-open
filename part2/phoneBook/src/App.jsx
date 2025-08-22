@@ -3,13 +3,14 @@ import axios from "axios";
 import Filter from "./components/Filter";
 import Form from "./components/Form";
 import Persons from "./components/Persons";
+import notes from "./services/notes";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => setPersons(response.data))
+    notes
+      .httpGet()
+      .then((response) => setPersons(response))
       .catch((err) => console.log("Error fetching persons", err));
   }, []);
   const [newName, setNewName] = useState("");
@@ -29,10 +30,10 @@ const App = () => {
       name: newName,
       number: newPhoneNo,
     };
-    axios
-      .post("http://localhost:3001/persons", newPerson)
+    notes
+      .httpPost(newPerson)
       .then((response) => {
-        setPersons([...persons, response.data]);
+        setPersons([...persons, response]);
       })
       .catch((err) => {
         console.log("Error creating new person", err);
