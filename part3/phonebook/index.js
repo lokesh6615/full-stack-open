@@ -25,8 +25,32 @@ let data = [
   },
 ];
 
+morgan.token("body", (req, res) => {
+  return JSON.stringify(req.body);
+});
+
 app.use(express.json());
-app.use(morgan("tiny"));
+app.use(
+  morgan((tokens, req, res) => {
+    if (req.method === "POST") {
+      return [
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokens.status(req, res),
+        tokens["response-time"](req, res),
+        "ms",
+        tokens.body(req, res),
+      ].join(" ");
+    }
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens["response-time"](req, res),
+      "ms",
+    ].join(" ");
+  })
+);
 
 app.get("/api/persons", (req, res) => {
   res.json(data);
