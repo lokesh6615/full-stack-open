@@ -85,7 +85,8 @@ app.delete("/api/persons/:id", (req, res, next) => {
 });
 
 app.post("/api/persons", (req, res) => {
-  if (!req.body.name || !req.body.number) {
+  const { name, number } = req.body;
+  if (!name || !number) {
     return res.status(400).json({ error: "name and number are required" });
   }
 
@@ -94,6 +95,24 @@ app.post("/api/persons", (req, res) => {
     number: req.body.number,
   });
   newPerson.save().then((savedPerson) => res.json(savedPerson));
+});
+
+app.put("/api/persons/:id", (req, res, next) => {
+  const id = req.params.id;
+  const { name, number } = req.body;
+  Person.findById(id)
+    .then((person) => {
+      if (!person) {
+        return res.status(404).end();
+      }
+      person.name = name;
+      person.number = number;
+
+      return person.save().then((updatedPerson) => {
+        res.json(updatedPerson);
+      });
+    })
+    .catch((err) => next(err));
 });
 
 app.listen(PORT, () => {
