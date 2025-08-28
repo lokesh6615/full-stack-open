@@ -48,9 +48,9 @@ app.get("/info", (req, res) => {
 
 app.get("/api/persons/:id", (req, res) => {
   const id = req.params.id;
-  const personData = data.find((person) => person.id === id);
-  if (!personData) res.status(404).send(`person with id ${id} not found`);
-  res.json(personData);
+  Person.findById(id)
+    .then((person) => res.json(person))
+    .catch((err) => res.status(404).send(`person with id ${id} not found`));
 });
 
 app.delete("/api/persons/:id", (req, res) => {
@@ -66,16 +66,11 @@ app.post("/api/persons", (req, res) => {
     return res.status(400).json({ error: "name and number are required" });
   }
 
-  if (data.find((person) => person.name === req.body.name)) {
-    return res.status(400).json({ error: "name must be unique" });
-  }
-  const newPerson = {
-    id: Math.floor(Math.random() * 100),
+  const newPerson = new Person({
     name: req.body.name,
     number: req.body.number,
-  };
-  data = data.concat(newPerson);
-  res.json(newPerson);
+  });
+  newPerson.save().then((savedPerson) => res.json(savedPerson));
 });
 
 app.listen(PORT, () => {
