@@ -62,6 +62,12 @@ const App = () => {
         setTimeout(() => setStatusMessage({}), 3000);
       })
       .catch((err) => {
+        const status = {
+          message: `Error saving phone number : ${err.response.data.error}`,
+          type: "fail",
+        };
+        setStatusMessage(status);
+        setTimeout(() => setStatusMessage({}), 3000);
         console.log("Error creating new person", err);
       });
     setNewName("");

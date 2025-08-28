@@ -39,12 +39,12 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).send({ error: error.message });
   }
 
   next(error);
 };
-
-app.use(errorHandler);
 
 app.get("/api/persons", (req, res) => {
   Person.find({}).then((result) => {
@@ -85,7 +85,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const { name, number } = req.body;
   if (!name || !number) {
     return res.status(400).json({ error: "name and number are required" });
@@ -95,7 +95,10 @@ app.post("/api/persons", (req, res) => {
     name: req.body.name,
     number: req.body.number,
   });
-  newPerson.save().then((savedPerson) => res.json(savedPerson));
+  newPerson
+    .save()
+    .then((savedPerson) => res.json(savedPerson))
+    .catch((err) => next(err));
 });
 
 app.put("/api/persons/:id", (req, res, next) => {
@@ -115,6 +118,8 @@ app.put("/api/persons/:id", (req, res, next) => {
     })
     .catch((err) => next(err));
 });
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
