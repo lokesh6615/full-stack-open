@@ -60,6 +60,7 @@ app.get("/info", (req, res) => {
 
 app.get("/api/persons/:id", (req, res, next) => {
   const id = req.params.id;
+
   Person.findById(id)
     .then((person) => {
       if (person) {
