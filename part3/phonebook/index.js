@@ -55,10 +55,15 @@ app.get("/api/persons/:id", (req, res) => {
 
 app.delete("/api/persons/:id", (req, res) => {
   const id = req.params.id;
-  const personData = data.find((person) => person.id === id);
-  if (!personData) res.status(404).send(`person with id ${id} not found`);
-  data = data.filter((person) => person.id != id);
-  res.status(204).end();
+  Person.findByIdAndDelete(id)
+    .then((result) => {
+      if (result) {
+        res.json();
+      } else {
+        res.status(404).send(`person with id ${id} not found`);
+      }
+    })
+    .catch((err) => res.status(400).send(`malformatted id`));
 });
 
 app.post("/api/persons", (req, res) => {
