@@ -1,0 +1,17 @@
+.success {
+  color: rgb(100, 213, 100);
+  background-color: rgb(243, 240, 240);
+  border: 5px solid;
+  border-color: rgb(100, 213, 100);
+  border-radius: 3px;
+  padding: 3px;
+}
+
+.fail {
+  color: rgb(213, 100, 100);
+  background-color: rgb(243, 240, 240);
+  border: 5px solid;
+  border-color: rgb(213, 100, 100);
+  border-radius: 3px;
+  padding: 3px;
+}

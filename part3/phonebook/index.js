@@ -1,7 +1,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
-const PORT = 3000;
+const cors = require("cors");
+const PORT = 3001;
 let data = [
   {
     id: "1",
@@ -30,6 +31,7 @@ morgan.token("body", (req, res) => {
 });
 
 app.use(express.json());
+app.use(cors());
 app.use(
   morgan((tokens, req, res) => {
     if (req.method === "POST") {
