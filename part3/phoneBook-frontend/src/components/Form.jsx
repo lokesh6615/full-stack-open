@@ -24,7 +24,7 @@ const Form = ({
           <p>
             Phone Number:
             <input
-              type="number"
+              type="tel"
               onChange={(e) => setNewPhoneNo(String(e.target.value))}
               value={newPhoneNo}
             />
