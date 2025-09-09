@@ -14,8 +14,18 @@ const favoriteBlog = (blogs) => {
   )
 }
 
+const mostBlogs = (blogs) => {
+  if (blogs.length === 0) return null
+  const newBlog = blogs.reduce(
+    (mblog, blog) => (blog.noOfBlog > (mblog.noOfBlog || 0) ? blog : mblog),
+    blogs[0]
+  )
+  return { author: newBlog.author, blogs: newBlog.noOfBlog }
+}
+
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
 }
