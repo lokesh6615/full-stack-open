@@ -1,6 +1,17 @@
 const blobRouter = require('express').Router()
 const Blog = require('../models/blob.model')
 const User = require('../models/user.model')
+const jwt = require('jsonwebtoken')
+const { JWT_SECRET } = require('../utils/config')
+
+const getTokenFrom = (request) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
+
 blobRouter.get('/', (request, response) => {
   Blog.find({})
     .populate('user')
@@ -11,13 +22,17 @@ blobRouter.get('/', (request, response) => {
 
 blobRouter.post('/', async (request, response) => {
   try {
-    const users = await User.find({})
-    const user = users[0]
-    if (!user) {
-      return response.status(400).json({ error: 'No users found' })
+    const decodedToken = jwt.verify(getTokenFrom(request), JWT_SECRET)
+    if (!decodedToken.id) {
+      return response.status(400).json({ error: 'Invalid token' })
     }
 
-    const blog = new Blog({ ...request.body, user: user._id })
+    const user = await User.findOne({ username: decodedToken.username })
+    if (!user) {
+      return response.status(400).json({ error: 'No user found' })
+    }
+
+    const blog = new Blog({ ...request.body, user: user.id })
     const savedBlog = await blog.save()
 
     user.blogs = user.blogs.concat(savedBlog._id)
