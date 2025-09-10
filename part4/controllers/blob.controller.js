@@ -26,4 +26,21 @@ blobRouter.delete('/:id', async (request, response) => {
   response.status(204).end()
 })
 
+blobRouter.put('/:id', async (request, response, next) => {
+  const id = request.params.id
+  const { likes } = request.body
+  Blog.findById(id)
+    .then((blog) => {
+      if (!blog) {
+        return response.status(404).end()
+      }
+
+      blog.likes = likes
+      return blog.save().then((updatedBlog) => {
+        response.status(201).json(updatedBlog)
+      })
+    })
+    .catch((error) => next(error))
+})
+
 module.exports = blobRouter

@@ -95,6 +95,23 @@ describe('deletion of blog', async () => {
   })
 })
 
+describe('updating of blog', async () => {
+  test('updating likes when id is valid', async () => {
+    const initialBlogs = await blogsInDb()
+    const blogToUpdate = initialBlogs[0]
+    blogToUpdate.likes = 25
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(201)
+    const blogsAfterUpdate = await blogsInDb()
+    const updatedBlog = blogsAfterUpdate.find(
+      (blog) => blogToUpdate.id === blog.id
+    )
+    assert.strictEqual(updatedBlog.likes, 25)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
