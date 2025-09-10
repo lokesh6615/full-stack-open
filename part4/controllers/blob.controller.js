@@ -1,23 +1,33 @@
 const blobRouter = require('express').Router()
 const Blog = require('../models/blob.model')
+const User = require('../models/user.model')
 blobRouter.get('/', (request, response) => {
-  Blog.find({}).then((blogs) => {
-    response.json(blogs)
-  })
+  Blog.find({})
+    .populate('user')
+    .then((blogs) => {
+      response.json(blogs)
+    })
 })
 
-blobRouter.post('/', (request, response) => {
-  const blog = new Blog(request.body)
+blobRouter.post('/', async (request, response) => {
+  try {
+    const users = await User.find({})
+    const user = users[0]
+    if (!user) {
+      return response.status(400).json({ error: 'No users found' })
+    }
 
-  blog
-    .save()
-    .then((result) => {
-      response.status(201).json(result)
-    })
-    .catch((error) => {
-      console.log('Error while inserting record in db', error)
-      response.status(400).json({ error: error.message })
-    })
+    const blog = new Blog({ ...request.body, user: user._id })
+    const savedBlog = await blog.save()
+
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+
+    response.status(201).json(savedBlog)
+  } catch (error) {
+    console.log('Error while inserting record in db', error)
+    response.status(400).json({ error: error.message })
+  }
 })
 
 blobRouter.delete('/:id', async (request, response) => {
