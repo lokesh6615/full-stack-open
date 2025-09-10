@@ -84,6 +84,17 @@ describe('addition of new blog', async () => {
   })
 })
 
+describe('deletion of blog', async () => {
+  test('deletion of blog when id is valid', async () => {
+    const initialBlogs = await blogsInDb()
+    const blogToDelete = initialBlogs[0]
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+    const blobsAfterDeletion = await blogsInDb()
+    assert.strictEqual(blobsAfterDeletion.length, initialBlogs.length - 1)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
