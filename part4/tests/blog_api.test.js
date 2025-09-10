@@ -68,6 +68,24 @@ test('a valid blog can be added', async () => {
   assert.strictEqual(blogsAtEnd.body.length, blogsArray.length + 1)
 })
 
+test('likes value is 0 if not provided in request', async () => {
+  const newBlog = {
+    title: 'controlled minds',
+    author: 'macha',
+    url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+  }
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const response = await api.get('/api/blogs')
+  const blogsAtEnd = response.body
+  const insertedBlog = blogsAtEnd[blogsAtEnd.length - 1]
+  assert.strictEqual(insertedBlog.likes, 0)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
