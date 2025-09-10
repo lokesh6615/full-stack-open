@@ -39,6 +39,18 @@ blobRouter.post('/', async (request, response) => {
 
 blobRouter.delete('/:id', async (request, response) => {
   const id = request.params.id
+  const blogToDelete = await Blog.findById(id)
+  if (!blogToDelete) {
+    return response.status(404).json({ error: 'Blog not found' })
+  }
+  const decodedToken = jwt.verify(request.token, JWT_SECRET)
+  if (!decodedToken.id) {
+    return response.status(400).json({ error: 'Invalid token' })
+  }
+
+  if (decodedToken.id.toString() !== blogToDelete.user.toString()) {
+    return response.status(400).send({ error: 'Unautorised user for deletion' })
+  }
   await Blog.findByIdAndDelete(id)
   response.status(204).end()
 })
