@@ -9,9 +9,15 @@ blobRouter.get('/', (request, response) => {
 blobRouter.post('/', (request, response) => {
   const blog = new Blog(request.body)
 
-  blog.save().then((result) => {
-    response.status(201).json(result)
-  })
+  blog
+    .save()
+    .then((result) => {
+      response.status(201).json(result)
+    })
+    .catch((error) => {
+      console.log('Error while inserting record in db', error)
+      response.status(400).json({ error: error.message })
+    })
 })
 
 module.exports = blobRouter

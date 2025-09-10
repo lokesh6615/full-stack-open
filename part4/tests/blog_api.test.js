@@ -1,30 +1,12 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blob.model')
+const { blogsArray, blogsInDb } = require('./test_helper')
 
 const api = supertest(app)
-
-const blogsArray = [
-  {
-    _id: '5a422a851b54a676234d17f7',
-    title: 'React patterns',
-    author: 'Michael Chan',
-    url: 'https://reactpatterns.com/',
-    likes: 7,
-    __v: 0,
-  },
-  {
-    _id: '5a422aa71b54a676234d17f8',
-    title: 'Go To Statement Considered Harmful',
-    author: 'Edsger W. Dijkstra',
-    url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-    likes: 5,
-    __v: 0,
-  },
-]
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -34,56 +16,72 @@ beforeEach(async () => {
   await newBlog.save()
 })
 
-test('blogs are returned as json', async () => {
-  const response = await api
-    .get('/api/blogs')
-    .expect(200)
-    .expect('Content-Type', /application\/json/)
+describe('getting data when some blogs are present in db', () => {
+  test('blogs are returned as json', async () => {
+    const response = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
 
-  assert.strictEqual(response.body.length, blogsArray.length)
-})
+    assert.strictEqual(response.body.length, blogsArray.length)
+  })
 
-test('blogs contain unique id field', async () => {
-  const response = await api.get('/api/blogs')
-  response.body.forEach((blog) => {
-    assert.ok(blog.id, 'Blog is missing id field')
+  test('blogs contain unique id field', async () => {
+    const response = await api.get('/api/blogs')
+    response.body.forEach((blog) => {
+      assert.ok(blog.id, 'Blog is missing id field')
+    })
   })
 })
 
-test('a valid blog can be added', async () => {
-  const newBlog = {
-    title: 'controlled minds',
-    author: 'macha',
-    url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
-    likes: 3,
-  }
+describe('addition of new blog', async () => {
+  test('a valid blog can be added', async () => {
+    const newBlog = {
+      title: 'controlled minds',
+      author: 'macha',
+      url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+      likes: 3,
+    }
 
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
 
-  const blogsAtEnd = await api.get('/api/blogs')
-  assert.strictEqual(blogsAtEnd.body.length, blogsArray.length + 1)
-})
+    const blogsAtEnd = await blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, blogsArray.length + 1)
+  })
 
-test('likes value is 0 if not provided in request', async () => {
-  const newBlog = {
-    title: 'controlled minds',
-    author: 'macha',
-    url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
-  }
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(201)
-    .expect('Content-Type', /application\/json/)
+  test('likes value is 0 if not provided in request', async () => {
+    const newBlog = {
+      title: 'controlled minds',
+      author: 'macha',
+      url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+    }
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
 
-  const response = await api.get('/api/blogs')
-  const blogsAtEnd = response.body
-  const insertedBlog = blogsAtEnd[blogsAtEnd.length - 1]
-  assert.strictEqual(insertedBlog.likes, 0)
+    const response = await api.get('/api/blogs')
+    const blogsAtEnd = response.body
+    const insertedBlog = blogsAtEnd[blogsAtEnd.length - 1]
+    assert.strictEqual(insertedBlog.likes, 0)
+  })
+
+  test('fails with status code 400 if data invalid', async () => {
+    const newBlog = {
+      author: 'macha',
+      url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+      likes: 2,
+    }
+
+    await api.post('/api/blogs').send(newBlog).expect(400)
+    const blogsAtEnd = await blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, blogsArray.length)
+  })
 })
 
 after(async () => {
