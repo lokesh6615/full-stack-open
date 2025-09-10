@@ -43,6 +43,13 @@ test('blogs are returned as json', async () => {
   assert.strictEqual(response.body.length, blogsArray.length)
 })
 
+test('blogs contain unique id field', async () => {
+  const response = await api.get('/api/blogs')
+  response.body.forEach((blog) => {
+    assert.ok(blog.id, 'Blog is missing id field')
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
