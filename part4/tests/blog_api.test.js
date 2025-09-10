@@ -50,6 +50,24 @@ test('blogs contain unique id field', async () => {
   })
 })
 
+test('a valid blog can be added', async () => {
+  const newBlog = {
+    title: 'controlled minds',
+    author: 'macha',
+    url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+    likes: 3,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await api.get('/api/blogs')
+  assert.strictEqual(blogsAtEnd.body.length, blogsArray.length + 1)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
