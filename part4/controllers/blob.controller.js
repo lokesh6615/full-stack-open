@@ -4,14 +4,6 @@ const User = require('../models/user.model')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../utils/config')
 
-const getTokenFrom = (request) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
-
 blobRouter.get('/', (request, response) => {
   Blog.find({})
     .populate('user')
@@ -22,7 +14,7 @@ blobRouter.get('/', (request, response) => {
 
 blobRouter.post('/', async (request, response) => {
   try {
-    const decodedToken = jwt.verify(getTokenFrom(request), JWT_SECRET)
+    const decodedToken = jwt.verify(request.token, JWT_SECRET)
     if (!decodedToken.id) {
       return response.status(400).json({ error: 'Invalid token' })
     }
