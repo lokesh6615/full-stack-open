@@ -4,37 +4,35 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blob.model')
-const { blogsArray, blogsInDb } = require('./test_helper')
+const User = require('../models/user.model')
+const { blogsArray, blogsInDb, getToken } = require('./test_helper')
+const jwt = require('jsonwebtoken')
+const { JWT_SECRET } = require('../utils/config')
 
 const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  let newBlog = new Blog(blogsArray[0])
+  await User.deleteMany({})
+  const user = {
+    username: 'rajesh',
+    name: 'Test User',
+    password: 'password123',
+  }
+  await api.post('/api/users').send(user)
+  const token = await getToken(api)
+  const userObj = jwt.verify(token, JWT_SECRET)
+  let newBlog = new Blog({ ...blogsArray[0], user: userObj.id })
   await newBlog.save()
-  newBlog = new Blog(blogsArray[1])
+  newBlog = new Blog({ ...blogsArray[1], user: userObj.id })
   await newBlog.save()
 })
 
-describe('getting data when some blogs are present in db', () => {
-  test('blogs are returned as json', async () => {
-    const response = await api
-      .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
-
-    assert.strictEqual(response.body.length, blogsArray.length)
+describe('addition of new blog', () => {
+  let token
+  beforeEach(async () => {
+    token = await getToken(api)
   })
-
-  test('blogs contain unique id field', async () => {
-    const response = await api.get('/api/blogs')
-    response.body.forEach((blog) => {
-      assert.ok(blog.id, 'Blog is missing id field')
-    })
-  })
-})
-
-describe('addition of new blog', async () => {
   test('a valid blog can be added', async () => {
     const newBlog = {
       title: 'controlled minds',
@@ -45,12 +43,27 @@ describe('addition of new blog', async () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
     const blogsAtEnd = await blogsInDb()
     assert.strictEqual(blogsAtEnd.length, blogsArray.length + 1)
+  })
+
+  test('a blob fails wiith status code 401 if token not provided', async () => {
+    const newBlog = {
+      title: 'controlled minds',
+      author: 'macha',
+      url: 'http://www.u.arizona.edu/~rubinson/cotions/Go_To_Considered_Harmful.html',
+      likes: 3,
+    }
+
+    await api.post('/api/blogs').send(newBlog).expect(401)
+
+    const blogsAtEnd = await blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, blogsArray.length)
   })
 
   test('likes value is 0 if not provided in request', async () => {
@@ -61,13 +74,13 @@ describe('addition of new blog', async () => {
     }
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
-    const response = await api.get('/api/blogs')
-    const blogsAtEnd = response.body
-    const insertedBlog = blogsAtEnd[blogsAtEnd.length - 1]
+    const blogsAtEnd = await blogsInDb()
+    const insertedBlog = blogsAtEnd.find((b) => b.title === newBlog.title)
     assert.strictEqual(insertedBlog.likes, 0)
   })
 
@@ -78,30 +91,71 @@ describe('addition of new blog', async () => {
       likes: 2,
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newBlog)
+      .expect(400)
     const blogsAtEnd = await blogsInDb()
     assert.strictEqual(blogsAtEnd.length, blogsArray.length)
   })
 })
 
-describe('deletion of blog', async () => {
+describe('getting data when some blogs are present in db', () => {
+  let token
+  beforeEach(async () => {
+    token = await getToken(api)
+  })
+  test('blogs are returned as json', async () => {
+    const response = await api
+      .get('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(response.body.length, blogsArray.length)
+  })
+
+  test('blogs contain unique id field', async () => {
+    const response = await api
+      .get('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+    response.body.forEach((blog) => {
+      assert.ok(blog.id, 'Blog is missing id field')
+    })
+  })
+})
+
+describe('deletion of blog', () => {
+  let token
+  beforeEach(async () => {
+    token = await getToken(api)
+  })
   test('deletion of blog when id is valid', async () => {
     const initialBlogs = await blogsInDb()
     const blogToDelete = initialBlogs[0]
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
 
     const blobsAfterDeletion = await blogsInDb()
     assert.strictEqual(blobsAfterDeletion.length, initialBlogs.length - 1)
   })
 })
 
-describe('updating of blog', async () => {
+describe('updating of blog', () => {
+  let token
+  beforeEach(async () => {
+    token = await getToken(api)
+  })
   test('updating likes when id is valid', async () => {
     const initialBlogs = await blogsInDb()
     const blogToUpdate = initialBlogs[0]
     blogToUpdate.likes = 25
     await api
       .put(`/api/blogs/${blogToUpdate.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send(blogToUpdate)
       .expect(201)
     const blogsAfterUpdate = await blogsInDb()

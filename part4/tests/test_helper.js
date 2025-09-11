@@ -1,4 +1,5 @@
 const Blog = require('../models/blob.model')
+
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
   return blogs.map((blog) => blog.toJSON())
@@ -24,7 +25,15 @@ const blogsArray = [
   },
 ]
 
+const getToken = async (api, username = 'rajesh', password = 'password123') => {
+  const loginResponse = await api
+    .post('/api/login')
+    .send({ username, password })
+  return loginResponse.body.token
+}
+
 module.exports = {
   blogsInDb,
   blogsArray,
+  getToken,
 }

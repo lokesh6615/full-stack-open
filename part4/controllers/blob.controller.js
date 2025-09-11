@@ -1,8 +1,5 @@
 const blobRouter = require('express').Router()
 const Blog = require('../models/blob.model')
-const User = require('../models/user.model')
-const jwt = require('jsonwebtoken')
-const { JWT_SECRET } = require('../utils/config')
 
 blobRouter.get('/', (request, response) => {
   Blog.find({})
@@ -41,7 +38,7 @@ blobRouter.delete('/:id', async (request, response) => {
   const user = request.user
 
   if (user.id.toString() !== blogToDelete.user.toString()) {
-    return response.status(400).send({ error: 'Unautorised user for deletion' })
+    return response.status(403).send({ error: 'Unautorised user for deletion' })
   }
   await Blog.findByIdAndDelete(id)
   response.status(204).end()
