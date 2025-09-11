@@ -1,4 +1,4 @@
-const Blog = require('../models/blob.model')
+const Blog = require('../models/blog.model')
 
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
@@ -25,15 +25,14 @@ const blogsArray = [
   },
 ]
 
-const getToken = async (api, username = 'rajesh', password = 'password123') => {
-  const loginResponse = await api
-    .post('/api/login')
-    .send({ username, password })
-  return loginResponse.body.token
-}
+// const getToken = async (api, username = 'rajesh', password = 'password123') => {
+//   const loginResponse = await api
+//     .post('/api/login')
+//     .send({ username, password })
+//   return loginResponse.body.token
+// }
 
 module.exports = {
   blogsInDb,
   blogsArray,
-  getToken,
 }

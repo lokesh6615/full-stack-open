@@ -1,7 +1,8 @@
-const blobRouter = require('express').Router()
-const Blog = require('../models/blob.model')
+const blogRouter = require('express').Router()
+const Blog = require('../models/blog.model')
+const { userExtractor } = require('../utils/middleware')
 
-blobRouter.get('/', (request, response) => {
+blogRouter.get('/', (request, response) => {
   Blog.find({})
     .populate('user')
     .then((blogs) => {
@@ -9,7 +10,7 @@ blobRouter.get('/', (request, response) => {
     })
 })
 
-blobRouter.post('/', async (request, response) => {
+blogRouter.post('/', userExtractor, async (request, response) => {
   try {
     const user = request.user
     if (!user) {
@@ -29,7 +30,7 @@ blobRouter.post('/', async (request, response) => {
   }
 })
 
-blobRouter.delete('/:id', async (request, response) => {
+blogRouter.delete('/:id', userExtractor, async (request, response) => {
   const id = request.params.id
   const blogToDelete = await Blog.findById(id)
   if (!blogToDelete) {
@@ -44,7 +45,7 @@ blobRouter.delete('/:id', async (request, response) => {
   response.status(204).end()
 })
 
-blobRouter.put('/:id', async (request, response, next) => {
+blogRouter.put('/:id', userExtractor, async (request, response, next) => {
   const id = request.params.id
   const { likes } = request.body
   Blog.findById(id)
@@ -61,4 +62,4 @@ blobRouter.put('/:id', async (request, response, next) => {
     .catch((error) => next(error))
 })
 
-module.exports = blobRouter
+module.exports = blogRouter

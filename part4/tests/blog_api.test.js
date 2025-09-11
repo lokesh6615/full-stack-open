@@ -3,13 +3,14 @@ const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
-const Blog = require('../models/blob.model')
+const Blog = require('../models/blog.model')
 const User = require('../models/user.model')
-const { blogsArray, blogsInDb, getToken } = require('./test_helper')
+const { blogsArray, blogsInDb } = require('./test_helper')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../utils/config')
 
 const api = supertest(app)
+let token = null
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -20,7 +21,10 @@ beforeEach(async () => {
     password: 'password123',
   }
   await api.post('/api/users').send(user)
-  const token = await getToken(api)
+  const response = await api
+    .post('/api/login')
+    .send({ username: user.username, password: user.password })
+  token = response.body.token
   const userObj = jwt.verify(token, JWT_SECRET)
   let newBlog = new Blog({ ...blogsArray[0], user: userObj.id })
   await newBlog.save()
@@ -29,11 +33,9 @@ beforeEach(async () => {
 })
 
 describe('addition of new blog', () => {
-  let token
-  beforeEach(async () => {
-    token = await getToken(api)
-  })
-  test('a valid blog can be added', async () => {
+  test.only('a valid blog can be added', async () => {
+    console.log('token inside valid blog', token)
+
     const newBlog = {
       title: 'controlled minds',
       author: 'macha',
@@ -66,7 +68,7 @@ describe('addition of new blog', () => {
     assert.strictEqual(blogsAtEnd.length, blogsArray.length)
   })
 
-  test('likes value is 0 if not provided in request', async () => {
+  test.only('likes value is 0 if not provided in request', async () => {
     const newBlog = {
       title: 'controlled minds',
       author: 'macha',
@@ -102,10 +104,6 @@ describe('addition of new blog', () => {
 })
 
 describe('getting data when some blogs are present in db', () => {
-  let token
-  beforeEach(async () => {
-    token = await getToken(api)
-  })
   test('blogs are returned as json', async () => {
     const response = await api
       .get('/api/blogs')
@@ -127,10 +125,6 @@ describe('getting data when some blogs are present in db', () => {
 })
 
 describe('deletion of blog', () => {
-  let token
-  beforeEach(async () => {
-    token = await getToken(api)
-  })
   test('deletion of blog when id is valid', async () => {
     const initialBlogs = await blogsInDb()
     const blogToDelete = initialBlogs[0]
@@ -145,10 +139,6 @@ describe('deletion of blog', () => {
 })
 
 describe('updating of blog', () => {
-  let token
-  beforeEach(async () => {
-    token = await getToken(api)
-  })
   test('updating likes when id is valid', async () => {
     const initialBlogs = await blogsInDb()
     const blogToUpdate = initialBlogs[0]
