@@ -7,6 +7,7 @@ const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState({})
   const [user, setUser] = useState(null)
 
   useEffect(() => {
@@ -16,7 +17,9 @@ const App = () => {
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem('loggedInUser')
     if (loggedInUser) {
-      setUser(JSON.parse(loggedInUser))
+      const userFromLocalStorage = JSON.parse(loggedInUser)
+      setUser(userFromLocalStorage)
+      blogService.setToken(userFromLocalStorage.token)
     }
   }, [])
 
@@ -26,10 +29,22 @@ const App = () => {
       const user = await loginService.login(username, password)
       window.localStorage.setItem('loggedInUser', JSON.stringify(user.data))
       setUser(user.data)
+      blogService.setToken(user.data.token)
       setUsername('')
       setPassword('')
     } catch (error) {
       console.log('Error while logging in user', error)
+    }
+  }
+
+  const handleAddBlog = async (e) => {
+    e.preventDefault()
+    try {
+      const newBlob = await blogService.addBlog(formData)
+      setBlogs(blogs.concat(newBlob))
+      setFormData({})
+    } catch (error) {
+      console.log('Error adding new blog', error)
     }
   }
 
@@ -44,7 +59,7 @@ const App = () => {
         <form onSubmit={handleLogin}>
           <div>
             <label>
-              User Name
+              User Name:
               <input
                 type="text"
                 value={username}
@@ -55,7 +70,7 @@ const App = () => {
 
           <div>
             <label>
-              Password
+              Password:
               <input
                 type="password"
                 value={password}
@@ -73,10 +88,53 @@ const App = () => {
         <div>
           <h2>blogs</h2>
           <h3>
-            {user.username} logged in{' '}
+            {user.username} logged in
             <button onClick={handleLogout}>logout</button>
           </h3>
 
+          <h2>Create new</h2>
+          <form onSubmit={handleAddBlog}>
+            <div>
+              <label>
+                title:
+                <input
+                  type="text"
+                  value={formData.title || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, title: e.target.value })
+                  }}
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                author:
+                <input
+                  type="text"
+                  value={formData.author || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, author: e.target.value })
+                  }}
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                url:
+                <input
+                  type="text"
+                  value={formData.url || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, url: e.target.value })
+                  }}
+                />
+              </label>
+            </div>
+            <br />
+            <button type="submit">create</button>
+          </form>
+
+          <br />
           {blogs.map((blog) => (
             <Blog key={blog.id} blog={blog} />
           ))}
