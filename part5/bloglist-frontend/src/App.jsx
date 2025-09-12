@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Notification from './components/Notification'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -9,6 +10,7 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [formData, setFormData] = useState({})
   const [user, setUser] = useState(null)
+  const [notification, setNotification] = useState({})
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
@@ -30,9 +32,18 @@ const App = () => {
       window.localStorage.setItem('loggedInUser', JSON.stringify(user.data))
       setUser(user.data)
       blogService.setToken(user.data.token)
+
       setUsername('')
       setPassword('')
+      setNotification({ message: 'Login successfull', type: 'success' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
     } catch (error) {
+      setNotification({ message: 'Invalid credentials', type: 'error' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
       console.log('Error while logging in user', error)
     }
   }
@@ -42,50 +53,72 @@ const App = () => {
     try {
       const newBlob = await blogService.addBlog(formData)
       setBlogs(blogs.concat(newBlob))
+      setNotification({ message: 'Blob added successfull', type: 'success' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
       setFormData({})
     } catch (error) {
+      setNotification({ message: 'Failed to add blogs', type: 'error' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
       console.log('Error adding new blog', error)
     }
   }
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedInUser')
+    setNotification({ message: 'Logout successfully', type: 'success' })
+    setTimeout(() => {
+      setNotification({})
+    }, 3000)
     setUser(null)
   }
 
   return (
     <div>
       {!user && (
-        <form onSubmit={handleLogin}>
-          <div>
-            <label>
-              User Name:
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </label>
-          </div>
+        <div>
+          <Notification
+            message={notification.message}
+            type={notification.type}
+          />
+          <form onSubmit={handleLogin}>
+            <div>
+              <label>
+                User Name:
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </label>
+            </div>
 
-          <div>
-            <label>
-              Password:
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-          </div>
+            <div>
+              <label>
+                Password:
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+            </div>
 
-          <br />
-          <button type="submit">Login</button>
-        </form>
+            <br />
+            <button type="submit">Login</button>
+          </form>
+        </div>
       )}
 
       {user && (
         <div>
+          <Notification
+            message={notification.message}
+            type={notification.type}
+          />
           <h2>blogs</h2>
           <h3>
             {user.username} logged in
