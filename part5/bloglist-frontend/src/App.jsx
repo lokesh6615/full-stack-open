@@ -11,6 +11,10 @@ const App = () => {
   const [formData, setFormData] = useState({})
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState({})
+  const [visible, setVisible] = useState(false)
+
+  const showWhenVisible = { display: visible ? '' : 'none' }
+  const hideWhenVisible = { display: visible ? 'none' : '' }
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
@@ -119,14 +123,17 @@ const App = () => {
             message={notification.message}
             type={notification.type}
           />
+
           <h2>blogs</h2>
           <h3>
             {user.username} logged in
             <button onClick={handleLogout}>logout</button>
           </h3>
 
-          <h2>Create new</h2>
-          <form onSubmit={handleAddBlog}>
+          <button onClick={() => setVisible(!visible)} style={hideWhenVisible}>
+            create new blog
+          </button>
+          <form onSubmit={handleAddBlog} style={showWhenVisible}>
             <div>
               <label>
                 title:
@@ -166,6 +173,9 @@ const App = () => {
             <br />
             <button type="submit">create</button>
           </form>
+          <button onClick={() => setVisible(!visible)} style={showWhenVisible}>
+            cancel
+          </button>
 
           <br />
           {blogs.map((blog) => (
