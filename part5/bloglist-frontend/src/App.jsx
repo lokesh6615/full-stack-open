@@ -20,7 +20,7 @@ const App = () => {
     blogService
       .getAll()
       .then((blogs) => setBlogs(blogs.sort((a, b) => b.likes - a.likes)))
-  }, [blogs])
+  }, [])
 
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem('loggedInUser')
@@ -87,7 +87,11 @@ const App = () => {
       const blogToEdit = blogs.find((blog) => blog.id === id)
       const updatedData = { ...blogToEdit, likes: blogToEdit.likes + 1 }
       const response = await blogService.editBlog(id, updatedData)
-      setBlogs(blogs.map((blog) => (blog.id != id ? blog : response)))
+      console.log('response', response)
+      const updatedBlogs = blogs.map((blog) =>
+        blog.id != id ? blog : { ...response, user: blog.user }
+      )
+      setBlogs(updatedBlogs.sort((a, b) => b.likes - a.likes))
     } catch (error) {
       setNotification({ message: 'Failed to update likes', type: 'error' })
       setTimeout(() => {
@@ -96,6 +100,26 @@ const App = () => {
       console.log('Error while updating likes', error)
     }
   }
+
+  const handleDeleteBlog = async (id) => {
+    try {
+      const blogToDelete = blogs.find((blog) => blog.id === id)
+      const confirmation = confirm(
+        `Remove blog ${blogToDelete.title} by ${blogToDelete.author}`
+      )
+      if (confirmation) {
+        await blogService.deleteBlog(id)
+        setBlogs(blogs.filter((blog) => blog.id !== id))
+      }
+    } catch (error) {
+      setNotification({ message: 'Failed to delete blog', type: 'error' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
+      console.log('Error while deleting likes', error)
+    }
+  }
+  console.log('blogs', blogs)
 
   return (
     <div>
@@ -137,7 +161,9 @@ const App = () => {
             <Blog
               key={blog.id}
               blog={blog}
+              user={user}
               updateLikes={() => increaseLikes(blog.id)}
+              deleteBlog={() => handleDeleteBlog(blog.id)}
             />
           ))}
         </div>
