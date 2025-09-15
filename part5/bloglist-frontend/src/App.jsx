@@ -80,6 +80,21 @@ const App = () => {
     setUser(null)
   }
 
+  const increaseLikes = async (id) => {
+    try {
+      const blogToEdit = blogs.find((blog) => blog.id === id)
+      const updatedData = { ...blogToEdit, likes: blogToEdit.likes + 1 }
+      const response = await blogService.editBlog(id, updatedData)
+      setBlogs(blogs.map((blog) => (blog.id != id ? blog : response)))
+    } catch (error) {
+      setNotification({ message: 'Failed to update likes', type: 'error' })
+      setTimeout(() => {
+        setNotification({})
+      }, 3000)
+      console.log('Error while updating likes', error)
+    }
+  }
+
   return (
     <div>
       {!user && (
@@ -117,7 +132,11 @@ const App = () => {
 
           <br />
           {blogs.map((blog) => (
-            <Blog key={blog.id} blog={blog} />
+            <Blog
+              key={blog.id}
+              blog={blog}
+              updateLikes={() => increaseLikes(blog.id)}
+            />
           ))}
         </div>
       )}
