@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
+import BlobForm from './components/BlobForm'
+import Togglable from './components/Togglable'
+import LoginForm from './components/LoginForm'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [formData, setFormData] = useState({})
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState({})
-  const [visible, setVisible] = useState(false)
 
-  const showWhenVisible = { display: visible ? '' : 'none' }
-  const hideWhenVisible = { display: visible ? 'none' : '' }
+  const blogFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
@@ -52,9 +52,9 @@ const App = () => {
     }
   }
 
-  const handleAddBlog = async (e) => {
-    e.preventDefault()
+  const handleAddBlog = async (formData, setFormData) => {
     try {
+      blogFormRef.current.toggleVisibility()
       const newBlob = await blogService.addBlog(formData)
       setBlogs(blogs.concat(newBlob))
       setNotification({ message: 'Blob added successfull', type: 'success' })
@@ -88,32 +88,15 @@ const App = () => {
             message={notification.message}
             type={notification.type}
           />
-          <form onSubmit={handleLogin}>
-            <div>
-              <label>
-                User Name:
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </label>
-            </div>
-
-            <div>
-              <label>
-                Password:
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </label>
-            </div>
-
-            <br />
-            <button type="submit">Login</button>
-          </form>
+          <Togglable buttonLabel="Login">
+            <LoginForm
+              username={username}
+              password={password}
+              handleUserNameChange={(e) => setUsername(e.target.value)}
+              handlePasswordChange={(e) => setPassword(e.target.value)}
+              handleSubmit={handleLogin}
+            />
+          </Togglable>
         </div>
       )}
 
@@ -123,59 +106,14 @@ const App = () => {
             message={notification.message}
             type={notification.type}
           />
-
           <h2>blogs</h2>
           <h3>
             {user.username} logged in
             <button onClick={handleLogout}>logout</button>
           </h3>
-
-          <button onClick={() => setVisible(!visible)} style={hideWhenVisible}>
-            create new blog
-          </button>
-          <form onSubmit={handleAddBlog} style={showWhenVisible}>
-            <div>
-              <label>
-                title:
-                <input
-                  type="text"
-                  value={formData.title || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, title: e.target.value })
-                  }}
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                author:
-                <input
-                  type="text"
-                  value={formData.author || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, author: e.target.value })
-                  }}
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                url:
-                <input
-                  type="text"
-                  value={formData.url || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, url: e.target.value })
-                  }}
-                />
-              </label>
-            </div>
-            <br />
-            <button type="submit">create</button>
-          </form>
-          <button onClick={() => setVisible(!visible)} style={showWhenVisible}>
-            cancel
-          </button>
+          <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+            <BlobForm createNew={handleAddBlog} />
+          </Togglable>
 
           <br />
           {blogs.map((blog) => (
