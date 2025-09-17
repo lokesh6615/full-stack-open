@@ -19,6 +19,7 @@ const BlobForm = ({ createNew }) => {
               onChange={(e) => {
                 setFormData({ ...formData, title: e.target.value })
               }}
+              placeholder="enter title..."
             />
           </label>
         </div>
@@ -31,6 +32,7 @@ const BlobForm = ({ createNew }) => {
               onChange={(e) => {
                 setFormData({ ...formData, author: e.target.value })
               }}
+              placeholder="enter author name..."
             />
           </label>
         </div>
@@ -43,6 +45,7 @@ const BlobForm = ({ createNew }) => {
               onChange={(e) => {
                 setFormData({ ...formData, url: e.target.value })
               }}
+              placeholder="enter url..."
             />
           </label>
         </div>
