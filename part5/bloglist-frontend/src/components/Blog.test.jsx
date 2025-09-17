@@ -35,3 +35,23 @@ test('url and likes are displayed when view button is clicked', async () => {
   const details = container.querySelector('.details')
   expect(details).not.toHaveStyle({ display: 'none' })
 })
+
+test('updateLikes is called twice when like button is clicked twice', async () => {
+  const blog = {
+    title: 'Atomic model',
+    author: 'rutherford',
+    url: 'http://atomicmodel.com',
+    likes: 1000,
+  }
+
+  const mockHandler = vi.fn()
+
+  render(<Blog blog={blog} updateLikes={mockHandler} />)
+
+  const user = userEvent.setup()
+  const button = screen.getByText('like')
+  await user.click(button)
+  await user.click(button)
+
+  expect(mockHandler.mock.calls).toHaveLength(2)
+})
