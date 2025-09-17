@@ -87,9 +87,8 @@ const App = () => {
       const blogToEdit = blogs.find((blog) => blog.id === id)
       const updatedData = { ...blogToEdit, likes: blogToEdit.likes + 1 }
       const response = await blogService.editBlog(id, updatedData)
-      console.log('response', response)
       const updatedBlogs = blogs.map((blog) =>
-        blog.id != id ? blog : { ...response, user: blog.user }
+        blog.id !== id ? blog : response
       )
       setBlogs(updatedBlogs.sort((a, b) => b.likes - a.likes))
     } catch (error) {
@@ -119,7 +118,6 @@ const App = () => {
       console.log('Error while deleting likes', error)
     }
   }
-  console.log('blogs', blogs)
 
   return (
     <div>
