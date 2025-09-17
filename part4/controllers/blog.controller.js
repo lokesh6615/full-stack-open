@@ -2,12 +2,18 @@ const blogRouter = require('express').Router()
 const Blog = require('../models/blog.model')
 const { userExtractor } = require('../utils/middleware')
 
-blogRouter.get('/', (request, response) => {
-  Blog.find({})
-    .populate('user')
-    .then((blogs) => {
-      response.json(blogs)
+blogRouter.get('/', async (request, response) => {
+  try {
+    const blogData = await Blog.find({}).populate('user', {
+      username: 1,
+      name: 1,
     })
+
+    return response.json(blogData)
+  } catch (error) {
+    console.log('Error while fetching blobs from db', error)
+    response.status(400).json({ error: error.message })
+  }
 })
 
 blogRouter.post('/', userExtractor, async (request, response) => {
@@ -43,6 +49,31 @@ blogRouter.delete('/:id', userExtractor, async (request, response) => {
   }
   await Blog.findByIdAndDelete(id)
   response.status(204).end()
+})
+
+blogRouter.put('/:id', userExtractor, async (request, response, next) => {
+  try {
+    const id = request.params.id
+    const { likes } = request.body
+
+    const blog = await Blog.findById(id)
+
+    if (!blog) {
+      return response.status(404).end()
+    }
+
+    blog.likes = likes
+    const updatedBlog = await blog.save()
+
+    const populatedBlog = await updatedBlog.populate('user', {
+      username: 1,
+      name: 1,
+    })
+
+    response.status(201).json(populatedBlog)
+  } catch (error) {
+    next(error)
+  }
 })
 
 blogRouter.put('/:id', userExtractor, async (request, response, next) => {
