@@ -29,7 +29,12 @@ blogRouter.post('/', userExtractor, async (request, response) => {
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
 
-    response.status(201).json(savedBlog)
+    const populatedBlog = await savedBlog.populate('user', {
+      username: 1,
+      name: 1,
+    })
+
+    response.status(201).json(populatedBlog)
   } catch (error) {
     console.log('Error while inserting record in db', error)
     response.status(400).json({ error: error.message })
