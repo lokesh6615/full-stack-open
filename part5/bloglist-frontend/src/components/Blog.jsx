@@ -3,7 +3,8 @@ const Blog = ({ blog, updateLikes, deleteBlog, user }) => {
   const [visible, setVisible] = useState(false)
 
   const showWhenVisible = { display: visible ? '' : 'none' }
-  console.log('user--->', blog.user)
+
+  const isOwner = user && blog.user && user.username === blog.user.username
 
   const blogStyle = {
     paddingTop: 10,
@@ -14,21 +15,19 @@ const Blog = ({ blog, updateLikes, deleteBlog, user }) => {
   }
   return (
     <div style={blogStyle}>
-      {blog.title}{' '}
+      {blog.title} {blog.author}
       <button onClick={() => setVisible(!visible)}>
         {visible ? 'hide' : 'view'}
       </button>
       <br />
-      <div style={showWhenVisible}>
+      <div style={showWhenVisible} className="details">
         {blog.url}
         <br />
         likes {blog.likes} <button onClick={updateLikes}>like</button>
         <br />
         {blog.author}
         <br />
-        {user?.username === blog?.user.username && (
-          <button onClick={deleteBlog}>remove</button>
-        )}
+        {isOwner && <button onClick={deleteBlog}>remove</button>}
       </div>
     </div>
   )
