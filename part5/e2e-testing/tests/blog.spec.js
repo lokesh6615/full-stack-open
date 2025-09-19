@@ -1,4 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { createBlog, login } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -21,7 +22,7 @@ describe('Blog app', () => {
   })
 
   describe('Login', () => {
-    test('success with correct credentials', async ({ page }) => {
+    test('succeeds with correct credentials', async ({ page }) => {
       await page.getByRole('button', { name: 'login' }).click()
       await page.getByLabel('User Name:').fill('mluukkai')
       await page.getByLabel('Password:').fill('salainen')
@@ -36,6 +37,23 @@ describe('Blog app', () => {
       await page.getByRole('button', { name: 'login' }).click()
 
       await expect(page.getByText('Invalid credentials')).toBeVisible()
+    })
+  })
+  describe('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await login(page, 'mluukkai', 'salainen')
+    })
+
+    test('a new blog can be created', async ({ page }) => {
+      await createBlog(
+        page,
+        'Biggboss',
+        'nagarjuna',
+        'http://Biggboss.com/',
+        'Matti Luukkainen'
+      )
+      await expect(page.getByText('Blob added successfull')).toBeVisible()
+      await expect(page.getByText('Biggboss nagarjuna')).toBeVisible()
     })
   })
 })
