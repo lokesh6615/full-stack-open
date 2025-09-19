@@ -56,4 +56,21 @@ describe('Blog app', () => {
       await expect(page.getByText('Biggboss nagarjuna')).toBeVisible()
     })
   })
+  describe('when blog is created', () => {
+    beforeEach(async ({ page }) => {
+      await login(page, 'mluukkai', 'salainen')
+    })
+    test('a blog can be liked', async ({ page }) => {
+      await createBlog(
+        page,
+        'Biggboss',
+        'nagarjuna',
+        'http://Biggboss.com/',
+        'Matti Luukkainen'
+      )
+      await page.getByRole('button', { name: 'view' }).click()
+      await page.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('likes 1')).toBeVisible()
+    })
+  })
 })
