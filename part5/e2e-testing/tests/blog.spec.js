@@ -11,6 +11,13 @@ describe('Blog app', () => {
         password: 'salainen',
       },
     })
+    await request.post('/api/users', {
+      data: {
+        name: 'Elon mask',
+        username: 'Elon',
+        password: 'mask',
+      },
+    })
     await page.goto('http://localhost:5173/')
   })
 
@@ -89,6 +96,23 @@ describe('Blog app', () => {
       })
       await page.getByRole('button', { name: 'remove' }).click()
       await expect(page.getByText('Biggboss nagarjuna')).not.toBeVisible()
+    })
+    test("only the user who added the blog sees the blog's delete button", async ({
+      page,
+    }) => {
+      await createBlog(
+        page,
+        'Biggboss',
+        'nagarjuna',
+        'http://Biggboss.com/',
+        'Matti Luukkainen'
+      )
+      await page.getByRole('button', { name: 'logout' }).click()
+      await login(page, 'Elon', 'mask')
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(
+        page.getByRole('button', { name: 'remove' })
+      ).not.toBeVisible()
     })
   })
 })
