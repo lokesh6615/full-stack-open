@@ -115,4 +115,68 @@ describe('Blog app', () => {
       ).not.toBeVisible()
     })
   })
+  describe('and multiple blogs are present', () => {
+    beforeEach(async ({ page }) => {
+      await login(page, 'mluukkai', 'salainen')
+      await createBlog(
+        page,
+        'Little hearts',
+        'mouli',
+        'http://blog.com/littleHearts',
+        'mluukkai'
+      )
+      await createBlog(
+        page,
+        'Biggboss',
+        'nagarjuna',
+        'http://myblog.com/biggboss',
+        'mluukkai'
+      )
+      await createBlog(
+        page,
+        'Bahubali',
+        'rajamouli',
+        'http://myblog.com/bahubali',
+        'mluukkai'
+      )
+    })
+    test('blogs are arranged in the order according to the likes', async ({
+      page,
+    }) => {
+      await page
+        .getByText('Little hearts mouliview')
+        .getByRole('button', { name: 'view' })
+        .click()
+      let locator = page.getByText('Little hearts moulihide')
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 1 like').waitFor()
+
+      await page
+        .getByText('Biggboss nagarjunaview')
+        .getByRole('button', { name: 'view' })
+        .click()
+      locator = page.getByText('Biggboss nagarjunahide')
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 1 like').waitFor()
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 2 like').waitFor()
+
+      await page
+        .getByText('Bahubali rajamouliview')
+        .getByRole('button', { name: 'view' })
+        .click()
+      locator = page.getByText('Bahubali rajamoulihide')
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 1 like').waitFor()
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 2 like').waitFor()
+      await locator.getByRole('button', { name: 'like' }).click()
+      await locator.getByText('likes 3 like').waitFor()
+
+      const likesLocatorArray = await page.locator('.likes').all()
+      await expect(likesLocatorArray[0]).toHaveText('likes 3 like')
+      await expect(likesLocatorArray[1]).toHaveText('likes 2 like')
+      await expect(likesLocatorArray[2]).toHaveText('likes 1 like')
+    })
+  })
 })
