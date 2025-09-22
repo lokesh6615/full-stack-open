@@ -33,7 +33,7 @@ export const addNewAnecdote = (data) => {
   }
 }
 
-const reducer = (state = initialState, action) => {
+const anecdoteReducer = (state = initialState, action) => {
   if (action.type === 'VOTE') {
     const anecdotesId = action.payload.id
     const toVote = state.find((anecdote) => anecdote.id === anecdotesId)
@@ -50,4 +50,4 @@ const reducer = (state = initialState, action) => {
   return state
 }
 
-export default reducer
+export default anecdoteReducer
