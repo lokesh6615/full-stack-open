@@ -1,6 +1,6 @@
 import { addNewAnecdote } from '../reducers/anecdoteReducer'
 import { useDispatch } from 'react-redux'
-const NewAnecdote = () => {
+const AnecdoteForm = () => {
   const dispatch = useDispatch()
   const addAnecdote = (e) => {
     e.preventDefault()
@@ -21,4 +21,4 @@ const NewAnecdote = () => {
   )
 }
 
-export default NewAnecdote
+export default AnecdoteForm
