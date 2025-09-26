@@ -11,14 +11,20 @@ const AnecdoteForm = () => {
       votes: 0,
     }
   }
+  const notificationDispatch = useNotificationDispatch()
   const newAnecdoteMutation = useMutation({
     mutationFn: createAnecdote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anecdotes'] })
     },
+    onError: (err) => {
+      console.log(err)
+      notificationDispatch(err.response.data.error || err.message)
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+    },
   })
-
-  const notificationDispatch = useNotificationDispatch()
 
   const onCreate = (event) => {
     event.preventDefault()
