@@ -25,6 +25,12 @@ const CreateNew = (props) => {
     }, 5000)
   }
 
+  const clearFields = () => {
+    content.clearField()
+    author.clearField()
+    info.clearField()
+  }
+
   return (
     <div>
       <h2>create a new anecdote</h2>
@@ -41,7 +47,10 @@ const CreateNew = (props) => {
           url for more info
           <input {...info} />
         </div>
-        <button>create</button>
+        <button type="submit">create</button>
+        <button type="button" onClick={clearFields}>
+          Reset
+        </button>
       </form>
     </div>
   )
