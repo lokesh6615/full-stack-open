@@ -1,0 +1,53 @@
+{
+  "notes": [
+    {
+      "id": 1,
+      "content": "custom-hooks are awesome!"
+    },
+    {
+      "id": 2,
+      "content": "best feature ever <3"
+    },
+    {
+      "content": "react is best",
+      "id": 3
+    },
+    {
+      "id": 4
+    },
+    {
+      "id": 5
+    },
+    {
+      "content": "hello",
+      "id": 6
+    }
+  ],
+  "persons": [
+    {
+      "id": 1,
+      "name": "mluukkai",
+      "number": "040-5483923"
+    },
+    {
+      "id": 2,
+      "name": "hellas",
+      "number": "012-123123"
+    },
+    {
+      "name": "boss",
+      "number": "84949484575",
+      "id": 3
+    },
+    {
+      "name": "empire",
+      "number": "678909876",
+      "id": 4
+    },
+    {
+      "name": "sai ganesh",
+      "number": "345678987654",
+      "id": 5
+    }
+  ]
+}
