@@ -4,6 +4,7 @@ import About from './components/About'
 import Footer from './components/Footer'
 import CreateNew from './components/CreateNew'
 import Menu from './components/Menu'
+import Anecdote from './components/Anecdote'
 import { Routes, Route } from 'react-router-dom'
 
 const App = () => {
@@ -51,6 +52,10 @@ const App = () => {
         <Route path="/" element={<AnecdoteList anecdotes={anecdotes} />} />
         <Route path="/new" element={<CreateNew addNew={addNew} />} />
         <Route path="/about" element={<About />} />
+        <Route
+          path="/anecdotes/:id"
+          element={<Anecdote anecdotes={anecdotes} />}
+        />
       </Routes>
 
       <Footer />
