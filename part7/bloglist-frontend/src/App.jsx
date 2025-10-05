@@ -7,22 +7,27 @@ import BlobForm from './components/BlobForm'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import { handleNotification } from './reducers/notificationReducer'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addLike,
+  createBlog,
+  deleteBlog,
+  initializeBlogs,
+} from './reducers/blogReducer'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
   const dispatch = useDispatch()
+  const blogs = useSelector((state) => state.blog)
+  const sortedBlogs = blogs.slice().sort((a, b) => b.likes - a.likes)
 
   useEffect(() => {
-    blogService
-      .getAll()
-      .then((blogs) => setBlogs(blogs.sort((a, b) => b.likes - a.likes)))
-  }, [])
+    dispatch(initializeBlogs())
+  }, [dispatch])
 
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem('loggedInUser')
@@ -54,7 +59,7 @@ const App = () => {
     try {
       blogFormRef.current.toggleVisibility()
       const newBlob = await blogService.addBlog(formData)
-      setBlogs(blogs.concat(newBlob))
+      dispatch(createBlog(newBlob))
       dispatch(handleNotification('Blob added successfull', 5))
 
       setFormData({})
@@ -74,11 +79,7 @@ const App = () => {
     try {
       const blogToEdit = blogs.find((blog) => blog.id === id)
       const updatedData = { ...blogToEdit, likes: blogToEdit.likes + 1 }
-      const response = await blogService.editBlog(id, updatedData)
-      const updatedBlogs = blogs.map((blog) =>
-        blog.id !== id ? blog : response
-      )
-      setBlogs(updatedBlogs.sort((a, b) => b.likes - a.likes))
+      dispatch(addLike(updatedData))
       dispatch(handleNotification('your like has been recorded', 5))
     } catch (error) {
       dispatch(handleNotification('failed to update likes', 5))
@@ -93,8 +94,7 @@ const App = () => {
         `Remove blog ${blogToDelete.title} by ${blogToDelete.author}`
       )
       if (confirmation) {
-        await blogService.deleteBlog(id)
-        setBlogs(blogs.filter((blog) => blog.id !== id))
+        dispatch(deleteBlog(blogToDelete))
       }
       dispatch(handleNotification('Blog deleted successfully', 5))
     } catch (error) {
@@ -133,7 +133,7 @@ const App = () => {
           </Togglable>
 
           <br />
-          {blogs.map((blog) => (
+          {sortedBlogs.map((blog) => (
             <Blog
               key={blog.id}
               blog={blog}
