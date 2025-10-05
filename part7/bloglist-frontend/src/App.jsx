@@ -14,38 +14,27 @@ import {
   deleteBlog,
   initializeBlogs,
 } from './reducers/blogReducer'
+import { initializeUser, loginUser, logoutUser } from './reducers/loginReducer'
 
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
   const dispatch = useDispatch()
   const blogs = useSelector((state) => state.blog)
   const sortedBlogs = blogs.slice().sort((a, b) => b.likes - a.likes)
+  const user = useSelector((state) => state.login)
 
   useEffect(() => {
     dispatch(initializeBlogs())
+    dispatch(initializeUser())
   }, [dispatch])
-
-  useEffect(() => {
-    const loggedInUser = window.localStorage.getItem('loggedInUser')
-    if (loggedInUser) {
-      const userFromLocalStorage = JSON.parse(loggedInUser)
-      setUser(userFromLocalStorage)
-      blogService.setToken(userFromLocalStorage.token)
-    }
-  }, [])
 
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
-      const user = await loginService.login(username, password)
-      window.localStorage.setItem('loggedInUser', JSON.stringify(user.data))
-      setUser(user.data)
-      blogService.setToken(user.data.token)
-
+      dispatch(loginUser(username, password))
       setUsername('')
       setPassword('')
       dispatch(handleNotification('Login successfull', 5))
@@ -58,8 +47,7 @@ const App = () => {
   const handleAddBlog = async (formData, setFormData) => {
     try {
       blogFormRef.current.toggleVisibility()
-      const newBlob = await blogService.addBlog(formData)
-      dispatch(createBlog(newBlob))
+      dispatch(createBlog(formData))
       dispatch(handleNotification('Blob added successfull', 5))
 
       setFormData({})
@@ -70,9 +58,8 @@ const App = () => {
   }
 
   const handleLogout = () => {
-    window.localStorage.removeItem('loggedInUser')
+    dispatch(logoutUser())
     dispatch(handleNotification('Logout successfully', 5))
-    setUser(null)
   }
 
   const increaseLikes = async (id) => {
