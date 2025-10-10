@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Blogs from './components/Blogs'
 import Notification from './components/Notification'
-import BlobForm from './components/BlobForm'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import { handleNotification } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
-import { createBlog, initializeBlogs } from './reducers/blogReducer'
+import { initializeBlogs } from './reducers/blogReducer'
 import { initializeUser, loginUser, logoutUser } from './reducers/loginReducer'
 import { initializeUserDetails } from './reducers/userReducer'
 import { Routes, Route } from 'react-router-dom'
@@ -53,7 +52,14 @@ const App = () => {
         <div>
           <h2>blogs</h2>
           <h3>
-            {user.username} logged in
+            <span>
+              <a href="/">Blogs</a>
+            </span>
+            <span>
+              <a href="/users">users</a>
+            </span>
+            <span>{user.username} logged in</span>
+
             <button onClick={handleLogout}>logout</button>
           </h3>
           <Routes>
