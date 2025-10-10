@@ -64,6 +64,14 @@ const BlogDetails = () => {
         <br />
         {requiredBlog.author}
         <br />
+        <h3>
+          <b>Comments</b>
+        </h3>
+        <ul>
+          {requiredBlog.comments.map((comment, idx) => (
+            <li key={idx}>{comment}</li>
+          ))}
+        </ul>
         {isOwner && (
           <button
             onClick={() => {
