@@ -12,6 +12,9 @@ import { Routes, Route } from 'react-router-dom'
 import Users from './components/Users'
 import UserBlogs from './components/UserBlogs'
 import BlogDetails from './components/BlogDetails'
+import * as React from 'react'
+import Box from '@mui/material/Box'
+import TextField from '@mui/material/TextField'
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -46,41 +49,107 @@ const App = () => {
   }
 
   return (
-    <div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: '#f5f6fa',
+        py: 4,
+      }}
+    >
       <Notification />
       {user ? (
-        <div>
-          <h2>blogs</h2>
-          <h3>
-            <span>
-              <a href="/">Blogs</a>
-            </span>
-            <span>
-              <a href="/users">users</a>
-            </span>
-            <span>{user.username} logged in</span>
-
-            <button onClick={handleLogout}>logout</button>
-          </h3>
+        <Box
+          sx={{
+            maxWidth: 800,
+            mx: 'auto',
+            background: 'white',
+            borderRadius: 2,
+            boxShadow: 2,
+            p: 3,
+          }}
+        >
+          <Box
+            component="nav"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 3,
+              borderBottom: '1px solid #e0e0e0',
+              pb: 1,
+            }}
+          >
+            <Box>
+              <a
+                href="/"
+                style={{
+                  marginRight: 16,
+                  textDecoration: 'none',
+                  color: '#1976d2',
+                  fontWeight: 500,
+                }}
+              >
+                Blogs
+              </a>
+              <a
+                href="/users"
+                style={{
+                  textDecoration: 'none',
+                  color: '#1976d2',
+                  fontWeight: 500,
+                }}
+              >
+                Users
+              </a>
+            </Box>
+            <Box>
+              <span style={{ marginRight: 12, color: '#333' }}>
+                {user.username} logged in
+              </span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '6px 16px',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                Logout
+              </button>
+            </Box>
+          </Box>
           <Routes>
             <Route path="/" element={<Blogs />} />
             <Route path="/users" element={<Users users={userDetails} />} />
             <Route path="/users/:id" element={<UserBlogs />} />
             <Route path="/blogs/:id" element={<BlogDetails />} />
           </Routes>
-        </div>
+        </Box>
       ) : (
-        <Togglable buttonLabel="Login">
-          <LoginForm
-            username={username}
-            password={password}
-            handleUserNameChange={(e) => setUsername(e.target.value)}
-            handlePasswordChange={(e) => setPassword(e.target.value)}
-            handleSubmit={handleLogin}
-          />
-        </Togglable>
+        <Box
+          sx={{
+            minHeight: '80vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Togglable buttonLabel="Login">
+            <LoginForm
+              username={username}
+              password={password}
+              handleUserNameChange={(e) => setUsername(e.target.value)}
+              handlePasswordChange={(e) => setPassword(e.target.value)}
+              handleSubmit={handleLogin}
+            />
+          </Togglable>
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
 

@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { addLike, deleteBlog, addComment } from '../reducers/blogReducer'
 import { handleNotification } from '../reducers/notificationReducer'
 import { useState } from 'react'
+import TextField from '@mui/material/TextField'
+import Button from '@mui/material/Button'
 
 const BlogDetails = () => {
   const [comment, setComment] = useState('')
@@ -67,13 +69,15 @@ const BlogDetails = () => {
         <br />
         <span>
           likes {requiredBlog.likes}{' '}
-          <button
+          <Button
+            variant="outlined"
             onClick={() => {
               increaseLikes(requiredBlog.id)
             }}
+            sx={{ m: 1 }}
           >
             like
-          </button>
+          </Button>
         </span>
         <br />
         {requiredBlog.author}
@@ -88,12 +92,20 @@ const BlogDetails = () => {
         </ul>
         <form onSubmit={handleAddComment}>
           <h3>Add comment</h3>
-          <input
-            type="text"
+          <TextField
+            id="filled-multiline-flexible"
+            label="comment"
+            multiline
+            maxRows={4}
+            variant="filled"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
-          <button type="submit">Add</button>
+          <br />
+          <br />
+          <Button variant="contained" type="submit">
+            Add
+          </Button>
         </form>
         {isOwner && (
           <button
