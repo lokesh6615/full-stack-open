@@ -13,11 +13,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const App = () => {
-  // const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  // const [notification, setNotification] = useState({})
 
   const blogFormRef = useRef()
   const notificationDispatch = useNotificationDispatch()
@@ -73,6 +71,29 @@ const App = () => {
     },
   })
 
+  const loginMutation = useMutation({
+    mutationFn: ({ username, password }) =>
+      loginService.login(username, password),
+    onSuccess: (user) => {
+      window.localStorage.setItem('loggedInUser', JSON.stringify(user.data))
+      setUser(user.data)
+      blogService.setToken(user.data.token)
+      setUsername('')
+      setPassword('')
+      notificationDispatch('Login successful')
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+    },
+    onError: (error) => {
+      notificationDispatch('Invalid credentials')
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+      console.log('Error while logging in user', error)
+    },
+  })
+
   const result = useQuery({
     queryKey: ['blogs'],
     queryFn: blogService.getAll,
@@ -88,27 +109,9 @@ const App = () => {
 
   const blogs = result.data
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault()
-    try {
-      const user = await loginService.login(username, password)
-      window.localStorage.setItem('loggedInUser', JSON.stringify(user.data))
-      setUser(user.data)
-      blogService.setToken(user.data.token)
-
-      setUsername('')
-      setPassword('')
-      notificationDispatch('Login successfull')
-      setTimeout(() => {
-        notificationDispatch('')
-      }, 5000)
-    } catch (error) {
-      notificationDispatch('Invalid credentials')
-      setTimeout(() => {
-        notificationDispatch('')
-      }, 5000)
-      console.log('Error while logging in user', error)
-    }
+    loginMutation.mutate({ username, password })
   }
 
   const handleAddBlog = async (formData, setFormData) => {
