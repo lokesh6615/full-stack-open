@@ -11,7 +11,7 @@ const blogSlicer = createSlice({
     appendBlog(state, action) {
       state.push(action.payload)
     },
-    editLike(state, action) {
+    editBlogData(state, action) {
       const updatedBlog = action.payload
       return state.map((blog) =>
         blog.id === updatedBlog.id ? updatedBlog : blog
@@ -23,7 +23,8 @@ const blogSlicer = createSlice({
   },
 })
 
-export const { setBlogs, appendBlog, editLike, removeBlog } = blogSlicer.actions
+export const { setBlogs, appendBlog, editBlogData, removeBlog } =
+  blogSlicer.actions
 
 export const initializeBlogs = () => {
   return async (dispatch) => {
@@ -42,7 +43,14 @@ export const createBlog = (newBlog) => {
 export const addLike = (updatedBlog) => {
   return async (dispatch) => {
     const updated = await blogService.editBlog(updatedBlog.id, updatedBlog)
-    dispatch(editLike(updated))
+    dispatch(editBlogData(updated))
+  }
+}
+
+export const addComment = ({ id, comment }) => {
+  return async (dispatch) => {
+    const updated = await blogService.editBlogComment(id, comment)
+    dispatch(editBlogData(updated))
   }
 }
 

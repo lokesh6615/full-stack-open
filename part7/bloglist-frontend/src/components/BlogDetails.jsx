@@ -1,9 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
-import { addLike, deleteBlog } from '../reducers/blogReducer'
+import { useNavigate, useParams } from 'react-router-dom'
+import { addLike, deleteBlog, addComment } from '../reducers/blogReducer'
 import { handleNotification } from '../reducers/notificationReducer'
+import { useState } from 'react'
 
 const BlogDetails = () => {
+  const [comment, setComment] = useState('')
   const blogId = useParams().id
   const blogs = useSelector((state) => state.blog)
   const user = useSelector((state) => state.login)
@@ -44,6 +46,18 @@ const BlogDetails = () => {
     }
   }
 
+  const handleAddComment = (e) => {
+    e.preventDefault()
+    try {
+      dispatch(addComment({ id: requiredBlog.id, comment }))
+      setComment('')
+      dispatch(handleNotification('Thanks for your comment', 5))
+    } catch (error) {
+      dispatch(handleNotification('failed to update comment', 5))
+      console.log('Error while updating comment', error)
+    }
+  }
+
   return (
     <div>
       {requiredBlog.title} {requiredBlog.author}
@@ -72,6 +86,15 @@ const BlogDetails = () => {
             <li key={idx}>{comment}</li>
           ))}
         </ul>
+        <form onSubmit={handleAddComment}>
+          <h3>Add comment</h3>
+          <input
+            type="text"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+          <button type="submit">Add</button>
+        </form>
         {isOwner && (
           <button
             onClick={() => {
