@@ -6,23 +6,23 @@ import Notification from './components/Notification'
 import BlobForm from './components/BlobForm'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
-import { useNotificationDispatch } from './components/NotificationContext'
+import {
+  useNotificationValue,
+  useNotificationDispatch,
+} from './components/NotificationContext'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
+  // const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [notification, setNotification] = useState({})
+  // const [notification, setNotification] = useState({})
 
   const blogFormRef = useRef()
   const notificationDispatch = useNotificationDispatch()
-
-  useEffect(() => {
-    blogService
-      .getAll()
-      .then((blogs) => setBlogs(blogs.sort((a, b) => b.likes - a.likes)))
-  }, [])
+  const notification = useNotificationValue()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem('loggedInUser')
@@ -32,6 +32,61 @@ const App = () => {
       blogService.setToken(userFromLocalStorage.token)
     }
   }, [])
+  const newBlogMutation = useMutation({
+    mutationFn: blogService.addBlog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+    },
+    onError: (err) => {
+      console.log(err)
+      notificationDispatch(err.response.data.error || err.message)
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+    },
+  })
+
+  const updateBlogLikes = useMutation({
+    mutationFn: ({ id, updatedData }) => blogService.editBlog(id, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+    },
+    onError: (err) => {
+      console.log(err)
+      notificationDispatch(err.response.data.error || err.message)
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+    },
+  })
+
+  const deleteBlogMutation = useMutation({
+    mutationFn: blogService.deleteBlog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+    },
+    onError: (err) => {
+      notificationDispatch(err.response?.data?.error || err.message)
+      setTimeout(() => {
+        notificationDispatch('')
+      }, 5000)
+    },
+  })
+
+  const result = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+  })
+
+  if (result.isPending) {
+    return <span>Loading...</span>
+  }
+
+  if (result.isError) {
+    return <span>Error: {result.error.message}</span>
+  }
+
+  const blogs = result.data
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -59,8 +114,7 @@ const App = () => {
   const handleAddBlog = async (formData, setFormData) => {
     try {
       blogFormRef.current.toggleVisibility()
-      const newBlob = await blogService.addBlog(formData)
-      setBlogs(blogs.concat(newBlob))
+      newBlogMutation.mutate(formData)
       notificationDispatch('Blob added successfull')
       setTimeout(() => {
         notificationDispatch('')
@@ -87,15 +141,11 @@ const App = () => {
     try {
       const blogToEdit = blogs.find((blog) => blog.id === id)
       const updatedData = { ...blogToEdit, likes: blogToEdit.likes + 1 }
-      const response = await blogService.editBlog(id, updatedData)
-      const updatedBlogs = blogs.map((blog) =>
-        blog.id !== id ? blog : response
-      )
+      updateBlogLikes.mutate({ id: updatedData.id, updatedData })
       notificationDispatch('Likes updated successfully')
       setTimeout(() => {
         notificationDispatch('')
       }, 5000)
-      setBlogs(updatedBlogs.sort((a, b) => b.likes - a.likes))
     } catch (error) {
       notificationDispatch('Failed to update likes')
       setTimeout(() => {
@@ -113,8 +163,11 @@ const App = () => {
         `Remove blog ${blogToDelete.title} by ${blogToDelete.author}`
       )
       if (confirmation) {
-        await blogService.deleteBlog(id)
-        setBlogs(blogs.filter((blog) => blog.id !== id))
+        deleteBlogMutation.mutate(id)
+        notificationDispatch('Blog deleted successfully')
+        setTimeout(() => {
+          notificationDispatch('')
+        }, 5000)
       }
     } catch (error) {
       notificationDispatch('Failed to delete blog')
@@ -130,10 +183,7 @@ const App = () => {
     <div>
       {!user && (
         <div>
-          <Notification
-            message={notification.message}
-            type={notification.type}
-          />
+          <Notification message={notification} />
           <Togglable buttonLabel="Login">
             <LoginForm
               username={username}
@@ -148,10 +198,7 @@ const App = () => {
 
       {user && (
         <div>
-          <Notification
-            message={notification.message}
-            type={notification.type}
-          />
+          <Notification message={notification} />
           <h2>blogs</h2>
           <h3>
             {user.username} logged in
@@ -162,15 +209,18 @@ const App = () => {
           </Togglable>
 
           <br />
-          {blogs.map((blog) => (
-            <Blog
-              key={blog.id}
-              blog={blog}
-              user={user}
-              updateLikes={() => increaseLikes(blog.id)}
-              deleteBlog={() => handleDeleteBlog(blog.id)}
-            />
-          ))}
+          {blogs
+            .slice()
+            .sort((a, b) => b.likes - a.likes)
+            .map((blog) => (
+              <Blog
+                key={blog.id}
+                blog={blog}
+                user={user}
+                updateLikes={() => increaseLikes(blog.id)}
+                deleteBlog={() => handleDeleteBlog(blog.id)}
+              />
+            ))}
         </div>
       )}
     </div>

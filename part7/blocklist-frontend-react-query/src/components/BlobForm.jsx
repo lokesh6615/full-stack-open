@@ -1,6 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+
 const BlobForm = ({ createNew }) => {
   const [formData, setFormData] = useState({})
+  const queryClient = useQueryClient()
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
