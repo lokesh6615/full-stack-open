@@ -133,7 +133,7 @@ const typeDefs = `
   type Author {
     name: String!
     born: Int
-    bookCount: Int!
+    bookCount: Int
   }
 
   type Mutation {
@@ -157,8 +157,19 @@ const resolvers = {
   Query: {
     authorCount: async () => Author.collection.countDocuments(),
     bookCount: () => Book.collection.countDocuments(),
-    allBooks: async () => {
-      return await Book.find({}).populate('author')
+    allBooks: async (root, args) => {
+      const filter = {}
+
+      if (args.author) {
+        let existingAuthor = await Author.findOne({ name: args.author })
+        if (!existingAuthor) return []
+        filter.author = existingAuthor._id
+      }
+
+      if (args.genre) {
+        filter.genres = { $in: [args.genre] }
+      }
+      return await Book.find(filter).populate('author')
     },
     allAuthors: async () => await Author.find({}),
   },
