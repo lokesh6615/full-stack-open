@@ -4,6 +4,7 @@ const { v1: uuid } = require('uuid')
 const Author = require('./models/author')
 const Book = require('./models/book')
 const mongoose = require('mongoose')
+const { GraphQLError } = require('graphql')
 require('dotenv').config()
 
 const MONGODB_URI = process.env.MONGODB_URI
@@ -177,6 +178,11 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args) => {
       const { title, author, published, genres } = args
+      if (title.length < 3 || author.length < 3) {
+        throw new GraphQLError('Input too short', {
+          extensions: { code: 'INVALID_INPUT' },
+        })
+      }
       let existingAuthor = await Author.findOne({ name: author })
       if (!existingAuthor) {
         existingAuthor = new Author({ name: author })
@@ -188,18 +194,44 @@ const resolvers = {
         author: existingAuthor._id,
         genres,
       })
-      await book.save()
+      try {
+        await book.save()
+      } catch (error) {
+        throw new GraphQLError('Saving book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.title,
+            error,
+          },
+        })
+      }
+
       return book.populate('author')
     },
 
-    editAuthor: (root, args) => {
-      const authorToEdit = authors.find((author) => author.name === args.name)
-      if (!authorToEdit) return null
-      const editedAuthor = { ...authorToEdit, born: args.setBornTo }
-      authors = authors.map((author) =>
-        author.name === args.name ? editedAuthor : author
-      )
-      return editedAuthor
+    editAuthor: async (root, args) => {
+      const authorToEdit = await Author.findOne({ name: args.name })
+      if (!authorToEdit) {
+        throw new GraphQLError('Author to edit not found', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+          },
+        })
+      }
+      authorToEdit.born = args.setBornTo
+      try {
+        await authorToEdit.save()
+      } catch (error) {
+        throw new GraphQLError('adding born failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.name,
+            error,
+          },
+        })
+      }
+      return authorToEdit
     },
   },
 }
