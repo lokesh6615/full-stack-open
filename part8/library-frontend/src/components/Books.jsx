@@ -6,35 +6,39 @@ const Books = (props) => {
   const [allGenres, setAllGenres] = useState([])
   const [selectedGenre, setSelectedGenre] = useState(null)
 
-  const booksObj = useQuery(ALL_BOOKS)
+  const booksObj = useQuery(ALL_BOOKS, {
+    variables: { genre: selectedGenre },
+  })
+
+  const unfilteredBooksObj = useQuery(ALL_BOOKS, {
+    variables: { genre: null },
+  })
 
   useEffect(() => {
-    if (booksObj.data) {
-      const genresFromBooks = booksObj.data.allBooks.flatMap(
-        (book) => book.genres
+    if (unfilteredBooksObj.data && unfilteredBooksObj.data.allBooks) {
+      const genresFromBooks = unfilteredBooksObj.data.allBooks.flatMap(
+        (book) => book.genres || []
       )
       const uniqueGenres = [...new Set(genresFromBooks)]
       setAllGenres(uniqueGenres)
     }
-  }, [booksObj.data])
+  }, [unfilteredBooksObj.data])
 
   if (!props.show) {
     return null
   }
 
-  if (booksObj.loading) {
+  if (booksObj.loading || unfilteredBooksObj.loading) {
     return <div>loading...</div>
   }
   if (booksObj.error) {
     return <div>Error: {booksObj.error.message}</div>
   }
+  if (unfilteredBooksObj.error) {
+    return <div>Error: {unfilteredBooksObj.error.message}</div>
+  }
 
-  const books =
-    selectedGenre === null
-      ? booksObj.data.allBooks
-      : booksObj.data.allBooks.filter((book) =>
-          book.genres.includes(selectedGenre)
-        )
+  const books = booksObj.data.allBooks
 
   return (
     <div>
@@ -59,7 +63,9 @@ const Books = (props) => {
       <div>
         {allGenres.map((genre) => {
           return (
-            <button onClick={() => setSelectedGenre(genre)}>{genre}</button>
+            <button key={genre} onClick={() => setSelectedGenre(genre)}>
+              {genre}
+            </button>
           )
         })}
       </div>
