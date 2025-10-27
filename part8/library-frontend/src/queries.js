@@ -64,3 +64,13 @@ export const LOGIN = gql`
     }
   }
 `
+
+export const LOGEDINUSER = gql`
+  query {
+    me {
+      id
+      username
+      favoriteGenre
+    }
+  }
+`
