@@ -6,17 +6,37 @@ import { CREATE_BOOK } from '../queries'
 import { ALL_AUTHORS } from '../queries'
 
 const NewBook = (props) => {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [published, setPublished] = useState('')
+  const [title, setTitle] = useState('biggboss2')
+  const [author, setAuthor] = useState('nagarjuna')
+  const [published, setPublished] = useState('2345')
   const [genre, setGenre] = useState('')
-  const [genres, setGenres] = useState([])
+  const [genres, setGenres] = useState(['entertainment'])
 
   const [createBook] = useMutation(CREATE_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
     onError: (error) => {
-      const messages = error.graphQLErrors.map((e) => e.message).join('\n')
-      setError(messages)
+      // const messages = error.graphQLErrors.map((e) => e.message).join('\n')
+      // console.log('Error---->', messages)
+      // props.setError(messages)
+      console.log('Full Error Object ---->', error)
+
+      // Then, try to extract GraphQL errors if they exist
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        const messages = error.graphQLErrors.map((e) => e.message).join('\n')
+        console.log('GraphQL Error Messages ---->', messages)
+        props.setError(messages)
+      } else if (error.networkError) {
+        // Handle network errors specifically
+        console.log('Network Error ---->', error.networkError.message)
+        props.setError(`Network Error: ${error.networkError.message}`)
+      } else {
+        // Catch any other unexpected errors
+        console.log(
+          'Unknown Error ---->',
+          error.message || 'An unknown error occurred'
+        )
+        props.setError(error.message || 'An unknown error occurred')
+      }
     },
   })
 
@@ -26,6 +46,8 @@ const NewBook = (props) => {
 
   const submit = async (event) => {
     event.preventDefault()
+
+    console.log(title, author, Number(published), genres)
 
     createBook({
       variables: { title, author, published: Number(published), genres },
