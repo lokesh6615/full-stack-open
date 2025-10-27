@@ -1,12 +1,26 @@
 import { gql } from '@apollo/client'
 import { useQuery } from '@apollo/client/react'
 import { ALL_BOOKS } from '../queries'
+import { useState, useEffect } from 'react'
 const Books = (props) => {
+  const [allGenres, setAllGenres] = useState([])
+  const [selectedGenre, setSelectedGenre] = useState(null)
+
+  const booksObj = useQuery(ALL_BOOKS)
+
+  useEffect(() => {
+    if (booksObj.data) {
+      const genresFromBooks = booksObj.data.allBooks.flatMap(
+        (book) => book.genres
+      )
+      const uniqueGenres = [...new Set(genresFromBooks)]
+      setAllGenres(uniqueGenres)
+    }
+  }, [booksObj.data])
+
   if (!props.show) {
     return null
   }
-
-  const booksObj = useQuery(ALL_BOOKS)
 
   if (booksObj.loading) {
     return <div>loading...</div>
@@ -15,7 +29,12 @@ const Books = (props) => {
     return <div>Error: {booksObj.error.message}</div>
   }
 
-  const books = booksObj.data.allBooks
+  const books =
+    selectedGenre === null
+      ? booksObj.data.allBooks
+      : booksObj.data.allBooks.filter((book) =>
+          book.genres.includes(selectedGenre)
+        )
 
   return (
     <div>
@@ -37,6 +56,13 @@ const Books = (props) => {
           ))}
         </tbody>
       </table>
+      <div>
+        {allGenres.map((genre) => {
+          return (
+            <button onClick={() => setSelectedGenre(genre)}>{genre}</button>
+          )
+        })}
+      </div>
     </div>
   )
 }
