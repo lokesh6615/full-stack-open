@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
-import { useMutation } from '@apollo/client/react'
+import { useMutation, useSubscription } from '@apollo/client/react'
 import { useState } from 'react'
-import { ALL_BOOKS } from '../queries'
+import { ALL_BOOKS, BOOK_ADDED } from '../queries'
 import { CREATE_BOOK } from '../queries'
 import { ALL_AUTHORS } from '../queries'
 
@@ -20,23 +20,26 @@ const NewBook = (props) => {
       // props.setError(messages)
       console.log('Full Error Object ---->', error)
 
-      // Then, try to extract GraphQL errors if they exist
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
         const messages = error.graphQLErrors.map((e) => e.message).join('\n')
         console.log('GraphQL Error Messages ---->', messages)
         props.setError(messages)
       } else if (error.networkError) {
-        // Handle network errors specifically
         console.log('Network Error ---->', error.networkError.message)
         props.setError(`Network Error: ${error.networkError.message}`)
       } else {
-        // Catch any other unexpected errors
         console.log(
           'Unknown Error ---->',
           error.message || 'An unknown error occurred'
         )
         props.setError(error.message || 'An unknown error occurred')
       }
+    },
+  })
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log(data)
     },
   })
 
