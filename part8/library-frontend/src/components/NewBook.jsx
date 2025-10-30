@@ -1,9 +1,25 @@
-import { gql } from '@apollo/client'
 import { useMutation, useSubscription } from '@apollo/client/react'
 import { useState } from 'react'
 import { ALL_BOOKS, BOOK_ADDED } from '../queries'
 import { CREATE_BOOK } from '../queries'
 import { ALL_AUTHORS } from '../queries'
+
+export const updateCache = (cache, query, addedBook) => {
+  const uniqByName = (a) => {
+    let seen = new Set()
+    return a.filter((item) => {
+      let k = item.title
+      return seen.has(k) ? false : seen.add(k)
+    })
+  }
+
+  cache.updateQuery(query, ({ allBooks }) => {
+    console.log('added Book---->', addedBook)
+    return {
+      allBooks: uniqByName(allBooks.concat(addedBook)),
+    }
+  })
+}
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('biggboss2')
@@ -13,11 +29,7 @@ const NewBook = (props) => {
   const [genres, setGenres] = useState(['entertainment'])
 
   const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
     onError: (error) => {
-      // const messages = error.graphQLErrors.map((e) => e.message).join('\n')
-      // console.log('Error---->', messages)
-      // props.setError(messages)
       console.log('Full Error Object ---->', error)
 
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
@@ -35,11 +47,18 @@ const NewBook = (props) => {
         props.setError(error.message || 'An unknown error occurred')
       }
     },
+    update: (cache, response) => {
+      updateCache(cache, { query: ALL_BOOKS }, response.data.addBook)
+    },
   })
 
   useSubscription(BOOK_ADDED, {
-    onData: ({ data }) => {
-      console.log(data)
+    onData: ({ data, client }) => {
+      const addedBook = data.data.bookAdded
+      updateCache(client.cache, { query: ALL_BOOKS }, addedBook)
+      client.refetchQueries({
+        include: [ALL_BOOKS],
+      })
     },
   })
 
