@@ -2,7 +2,7 @@ interface bmiValues {
   height: number;
   weight: number;
 }
-const calculateBmi = (height: number, weight: number): String => {
+const calculateBmi = (height: number, weight: number): string => {
   const heightInMeters = height / 100;
   const bmiValue = weight / (heightInMeters * heightInMeters);
   switch (true) {
