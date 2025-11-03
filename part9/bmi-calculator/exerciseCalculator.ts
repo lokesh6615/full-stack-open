@@ -62,6 +62,8 @@ const calculateExercises = (
   };
 };
 
+export default calculateExercises;
+
 try {
   const { target, dailyHours } = parseExerciseArguments(process.argv);
   console.log(calculateExercises(dailyHours, target));
