@@ -23,7 +23,9 @@
   "license": "ISC",
   "dependencies": {
     "@types/cors": "^2.8.19",
+    "@types/uuid": "^10.0.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "uuid": "^13.0.0"
   }
 }
