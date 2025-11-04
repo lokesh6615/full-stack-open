@@ -11,13 +11,13 @@ router.get('/', (_req, res: Response<NonSensitivePatient[]>) => {
 
 router.post('/', (req, res) => {
   const { name, dateOfBirth, ssn, gender, occupation } = req.body;
-  const addedPatient = patientService.addPatient(
+  const addedPatient = patientService.addPatient({
     name,
     dateOfBirth,
     ssn,
     gender,
-    occupation
-  );
+    occupation,
+  });
   res.json(addedPatient);
 });
 
