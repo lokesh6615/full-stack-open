@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Diary, Visibility, Weather } from './types';
 import { getAllDiaries, addDiary } from './services/diaryService';
+import axios from 'axios';
 
 const App = () => {
   const [diaries, setDiaries] = useState<Diary[]>([]);
@@ -8,6 +9,7 @@ const App = () => {
   const [weather, setWeather] = useState<Weather>('' as Weather);
   const [comment, setComment] = useState('');
   const [date, setDate] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     getAllDiaries().then((data) => {
@@ -18,15 +20,23 @@ const App = () => {
   const createDiary = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (visibility && weather) {
-      addDiary({ date, visibility, weather, comment }).then((diary) =>
-        setDiaries(diaries.concat(diary))
-      );
+      addDiary({ date, visibility, weather, comment })
+        .then((diary) => setDiaries(diaries.concat(diary)))
+        .catch((error: unknown) => {
+          if (axios.isAxiosError(error)) {
+            console.log(error.response?.data);
+            setErrorMessage(error.response?.data);
+          } else {
+            console.error(error);
+          }
+        });
     }
   };
 
   return (
     <div>
       <h3>Add Diary</h3>
+      <p style={{ color: 'red' }}>{errorMessage}</p>
       <form onSubmit={createDiary}>
         <div>
           Date
