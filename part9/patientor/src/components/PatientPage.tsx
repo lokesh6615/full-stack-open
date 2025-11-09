@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import patientService from '../services/patients';
-import { Patient } from '../types';
+import diagnosesService from '../services/diagnoses';
+import { Diagnosis, Patient } from '../types';
 import { Typography } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -21,6 +22,7 @@ const StyledRating = styled(Rating)({
 
 const PatientPage = () => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [diagnosisData, setDiagnosisData] = useState<Diagnosis[] | null>(null);
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -30,6 +32,8 @@ const PatientPage = () => {
       try {
         const patient = await patientService.getById(id);
         setPatientData(patient);
+        const diagnosis = await diagnosesService.getAll();
+        setDiagnosisData(diagnosis);
       } catch (error) {
         console.error('Error fetching patient:', error);
       }
@@ -64,7 +68,10 @@ const PatientPage = () => {
 
           <ul>
             {entry.diagnosisCodes?.map((code) => (
-              <li key={code}>{code}</li>
+              <li key={code}>
+                {code}
+                {diagnosisData?.find((data) => data.code === code)?.name}
+              </li>
             ))}
           </ul>
         </div>
