@@ -12,13 +12,14 @@ router.get('/', (_req, res: Response<NonSensitivePatient[]>) => {
 
 router.post('/', (req, res) => {
   try {
-    const { name, dateOfBirth, ssn, gender, occupation } = req.body;
+    const { name, dateOfBirth, ssn, gender, occupation, entries } = req.body;
     const addedPatient = patientService.addPatient({
       name,
       dateOfBirth,
       ssn,
       gender,
       occupation,
+      entries,
     });
     res.json(addedPatient);
   } catch (error: unknown) {
@@ -27,6 +28,16 @@ router.post('/', (req, res) => {
     } else {
       res.status(400).send({ error: 'unknown error' });
     }
+  }
+});
+
+router.get('/:id', (req, res) => {
+  const { id } = req.params;
+  const patientData = patientService.getNonSensitivePatient(id);
+  if (patientData) {
+    res.send(patientData);
+  } else {
+    res.status(400).send({ error: 'patient not found' });
   }
 });
 

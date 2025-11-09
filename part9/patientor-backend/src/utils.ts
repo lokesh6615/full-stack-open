@@ -10,7 +10,8 @@ const toNewPatient = (object: unknown): NewPatient => {
     'dateOfBirth' in object &&
     'ssn' in object &&
     'gender' in object &&
-    'occupation' in object
+    'occupation' in object &&
+    'entries' in object
   ) {
     const newPatientEntry: NewPatient = {
       name: z.string().parse(object.name),
@@ -18,6 +19,7 @@ const toNewPatient = (object: unknown): NewPatient => {
       ssn: z.string().parse(object.ssn),
       gender: z.nativeEnum(Gender).parse(object.gender),
       occupation: z.string().parse(object.occupation),
+      entries: z.array(z.string()).parse(object.entries),
     };
 
     return newPatientEntry;
