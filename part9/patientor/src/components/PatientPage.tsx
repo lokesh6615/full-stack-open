@@ -57,6 +57,18 @@ const PatientPage = () => {
         )}
       </h1>
       <h3>{patientData.dateOfBirth}</h3>
+      {patientData.entries.map((entry) => (
+        <div>
+          <span>{entry.date}</span>
+          <span>{entry.description}</span>
+
+          <ul>
+            {entry.diagnosisCodes?.map((code) => (
+              <li key={code}>{code}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
       <Typography component="legend">Health Rating</Typography>
       <StyledRating
         name="customized-color"
