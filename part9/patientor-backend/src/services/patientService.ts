@@ -1,6 +1,7 @@
 import PatientData from '../../data/patients';
 import { NewPatient, NonSensitivePatient, Patient } from '../types';
 import { v4 as uuid } from 'uuid';
+import newPatientSchema from '../utils';
 
 const getPatients = (): Patient[] => {
   return PatientData;
@@ -20,6 +21,7 @@ const getNonSensitivePatients = (): NonSensitivePatient[] => {
 };
 
 const addPatient = (patientEntry: NewPatient): Patient => {
+  newPatientSchema.parse(patientEntry);
   const newPatient = {
     id: uuid(),
     ...patientEntry,
