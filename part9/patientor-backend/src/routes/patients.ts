@@ -1,8 +1,9 @@
 import express from 'express';
-import { NonSensitivePatient } from '../types';
-import { Response } from 'express';
+import { Entry, NewEntry, NonSensitivePatient } from '../types';
+import { Request, Response } from 'express';
 import patientService from '../services/patientService';
 import z from 'zod';
+import { NewEntrySchema } from '../utils';
 
 const router = express.Router();
 
@@ -40,5 +41,15 @@ router.get('/:id', (req, res) => {
     res.status(400).send({ error: 'patient not found' });
   }
 });
+
+router.post(
+  '/:id/entries',
+  (req: Request<{ id: string }, unknown, NewEntry>, res: Response<Entry>) => {
+    NewEntrySchema.parse(req.body);
+    const { id } = req.params;
+    const addedEntry = patientService.addPatientEntry(id, req.body);
+    res.send(addedEntry);
+  }
+);
 
 export default router;

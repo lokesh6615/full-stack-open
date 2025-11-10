@@ -1,4 +1,4 @@
-import { Diagnosis, HealthCheckEntry, HealthCheckRating } from '../../types';
+import { Diagnosis, HealthCheckEntry } from '../../types';
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
