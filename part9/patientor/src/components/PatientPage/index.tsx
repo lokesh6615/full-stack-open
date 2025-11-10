@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import patientService from '../../services/patients';
 import diagnosesService from '../../services/diagnoses';
-import { Diagnosis, Patient, Entry } from '../../types';
+import { Diagnosis, Patient, Entry, PatientEntry } from '../../types';
 import { Typography } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -13,6 +13,7 @@ import FemaleIcon from '@mui/icons-material/Female';
 import HealthCheck from './HealthCheck';
 import Hospital from './Hospital';
 import OccupationalHealthcare from './OccupationalHealthcare';
+import { Alert, Button, Paper, TextField } from '@mui/material';
 
 const StyledRating = styled(Rating)({
   '& .MuiRating-iconFilled': {
@@ -26,6 +27,13 @@ const StyledRating = styled(Rating)({
 const PatientPage = () => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const [diagnosisData, setDiagnosisData] = useState<Diagnosis[] | null>(null);
+  const [date, setDate] = useState('');
+  const [specialist, setSpecialist] = useState('');
+  const [description, setDescription] = useState('');
+  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+  const [healthCheckRating, setHealthCheckRating] = useState<number>(0);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
@@ -74,6 +82,33 @@ const PatientPage = () => {
     }
   };
 
+  const addPatientEntry = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    const diagnosisCodeArray = diagnosisCodes.split(',');
+    const newEntry: PatientEntry = {
+      date,
+      type: 'HealthCheck',
+      specialist,
+      description,
+      healthCheckRating,
+    };
+    if (diagnosisCodeArray[0] !== '') {
+      newEntry.diagnosisCodes = diagnosisCodeArray;
+    }
+    patientService
+      .addPatientEntry(id, newEntry)
+      .then((entry) => {
+        setPatientData((prev) =>
+          prev ? { ...prev, entries: [...prev.entries, entry] } : prev
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+        setErrorMessage(error.response.data[0].message);
+        setTimeout(() => setErrorMessage(null), 3000);
+      });
+  };
+
   return (
     <div>
       <h1>
@@ -85,6 +120,83 @@ const PatientPage = () => {
         )}
       </h1>
       <h3>{patientData.dateOfBirth}</h3>
+      {errorMessage && (
+        <Alert severity="error" sx={{ marginY: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
+      {!showForm && (
+        <Button
+          type="button"
+          onClick={() => setShowForm(true)}
+          variant="contained"
+          sx={{ marginY: 2 }}
+        >
+          Add New Entry
+        </Button>
+      )}
+      {showForm && (
+        <Paper elevation={3} sx={{ padding: 4, marginY: 2 }}>
+          <h4>New HealthCheck Entry</h4>
+          <form onSubmit={addPatientEntry}>
+            <TextField
+              variant="standard"
+              fullWidth
+              label="Date"
+              size="small"
+              type="text"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <TextField
+              variant="standard"
+              fullWidth
+              label="Specialist"
+              size="small"
+              type="text"
+              value={specialist}
+              onChange={(e) => setSpecialist(e.target.value)}
+            />
+            <TextField
+              variant="standard"
+              fullWidth
+              label="Description"
+              size="small"
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <TextField
+              variant="standard"
+              fullWidth
+              label="Diagnosis Codes"
+              size="small"
+              type="text"
+              value={diagnosisCodes}
+              onChange={(e) => setDiagnosisCodes(e.target.value)}
+            />
+            <TextField
+              variant="standard"
+              fullWidth
+              label="Health Check Rating(0-4)"
+              size="small"
+              type="text"
+              value={healthCheckRating}
+              onChange={(e) => setHealthCheckRating(Number(e.target.value))}
+            />
+            <Button
+              type="button"
+              onClick={() => setShowForm(false)}
+              variant="contained"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" sx={{ margin: 2 }} variant="contained">
+              Add Entry
+            </Button>
+          </form>
+        </Paper>
+      )}
       <h2>Entries :</h2>
       {patientData.entries.map((entry) => categorizedFields(entry))}
       <Typography component="legend">Health Rating</Typography>

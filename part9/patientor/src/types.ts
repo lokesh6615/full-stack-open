@@ -63,3 +63,5 @@ export interface HospitalEntry extends BaseEntry {
     criteria: string;
   };
 }
+
+export type PatientEntry = Omit<HealthCheckEntry, 'id'>;
