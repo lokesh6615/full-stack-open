@@ -25,10 +25,19 @@ export interface Patient {
   entries: Entry[];
 }
 
-export type PatientFormValues = Omit<Patient, 'id' | 'entries'>;
+export interface Form {
+  healthCheckForm: boolean;
+  HospitalEntryForm: boolean;
+  OccationalHealthCheckForm: boolean;
+}
+
+type UnionOmit<T, K extends string | number | symbol> = T extends unknown
+  ? Omit<T, K>
+  : never;
+
+export type PatientFormValues = UnionOmit<Entry, 'id'>;
 
 export interface BaseEntry {
-  id: string;
   date: string;
   specialist: string;
   description: string;

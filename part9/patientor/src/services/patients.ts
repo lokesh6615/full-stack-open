@@ -20,7 +20,7 @@ const getById = async (id: string) => {
   return data;
 };
 
-const addPatientEntry = async (id: string, object: PatientEntry) => {
+const addPatientEntry = async (id: string, object: Entry) => {
   const { data } = await axios.post<Entry>(
     `${apiBaseUrl}/patients/${id}/entries`,
     object
