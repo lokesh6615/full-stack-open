@@ -3,6 +3,7 @@ import patientService from '../../../services/patients';
 import { Patient, HospitalEntry } from '../../../types';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import MultipleSelect from '../../MultipleSelect';
 
 interface props {
   setErrorMessage: (message: string | null) => void;
@@ -19,7 +20,7 @@ const HospitalEntryForm = ({
   const [criteria, setCriteria] = useState<string>('');
   const [specialist, setSpecialist] = useState('');
   const [description, setDescription] = useState('');
-  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+  const [diagnosisCodes, setDiagnosisCodes] = useState<string[]>([]);
 
   const { id } = useParams<{ id: string }>();
 
@@ -28,7 +29,6 @@ const HospitalEntryForm = ({
   }
   const addPatientEntry = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const diagnosisCodeArray = diagnosisCodes.split(',');
     const newEntry: HospitalEntry = {
       date,
       type: 'Hospital',
@@ -39,8 +39,8 @@ const HospitalEntryForm = ({
         criteria: criteria,
       },
     };
-    if (diagnosisCodeArray[0] !== '') {
-      newEntry.diagnosisCodes = diagnosisCodeArray;
+    if (diagnosisCodes && diagnosisCodes.length > 0) {
+      newEntry.diagnosisCodes = diagnosisCodes;
     }
     patientService
       .addPatientEntry(id, newEntry)
@@ -69,9 +69,10 @@ const HospitalEntryForm = ({
           fullWidth
           label="Date"
           size="small"
-          type="text"
+          type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           variant="standard"
@@ -91,14 +92,9 @@ const HospitalEntryForm = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <TextField
-          variant="standard"
-          fullWidth
-          label="Diagnosis Codes"
-          size="small"
-          type="text"
-          value={diagnosisCodes}
-          onChange={(e) => setDiagnosisCodes(e.target.value)}
+        <MultipleSelect
+          selectedValues={diagnosisCodes}
+          setSelectedValues={setDiagnosisCodes}
         />
         <h4>Discharge:</h4>
         <TextField
@@ -106,9 +102,10 @@ const HospitalEntryForm = ({
           fullWidth
           label="Date"
           size="small"
-          type="text"
+          type="date"
           value={dischargeDate}
           onChange={(e) => setDischargeDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           variant="standard"

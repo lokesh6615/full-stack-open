@@ -3,6 +3,7 @@ import patientService from '../../../services/patients';
 import { Patient, OccupationalHealthcareEntry } from '../../../types';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import MultipleSelect from '../../MultipleSelect';
 
 interface props {
   setErrorMessage: (message: string | null) => void;
@@ -17,7 +18,7 @@ const OccupationalHealthcareEntryForm = ({
   const [date, setDate] = useState('');
   const [specialist, setSpecialist] = useState('');
   const [description, setDescription] = useState('');
-  const [diagnosisCodes, setDiagnosisCodes] = useState('');
+  const [diagnosisCodes, setDiagnosisCodes] = useState<string[]>([]);
   const [employerName, setEmployerName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -29,7 +30,6 @@ const OccupationalHealthcareEntryForm = ({
   }
   const addPatientEntry = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    const diagnosisCodeArray = diagnosisCodes.split(',');
     const newEntry: OccupationalHealthcareEntry = {
       date,
       type: 'OccupationalHealthcare',
@@ -41,8 +41,8 @@ const OccupationalHealthcareEntryForm = ({
         endDate,
       },
     };
-    if (diagnosisCodeArray[0] !== '') {
-      newEntry.diagnosisCodes = diagnosisCodeArray;
+    if (diagnosisCodes && diagnosisCodes.length > 0) {
+      newEntry.diagnosisCodes = diagnosisCodes;
     }
     patientService
       .addPatientEntry(id, newEntry)
@@ -67,9 +67,10 @@ const OccupationalHealthcareEntryForm = ({
           fullWidth
           label="Date"
           size="small"
-          type="text"
+          type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           variant="standard"
@@ -89,14 +90,9 @@ const OccupationalHealthcareEntryForm = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <TextField
-          variant="standard"
-          fullWidth
-          label="Diagnosis Codes"
-          size="small"
-          type="text"
-          value={diagnosisCodes}
-          onChange={(e) => setDiagnosisCodes(e.target.value)}
+        <MultipleSelect
+          selectedValues={diagnosisCodes}
+          setSelectedValues={setDiagnosisCodes}
         />
 
         <TextField
@@ -116,18 +112,20 @@ const OccupationalHealthcareEntryForm = ({
           fullWidth
           label="Start Date"
           size="small"
-          type="text"
+          type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
         <TextField
           variant="standard"
           fullWidth
           label="End Date"
           size="small"
-          type="text"
+          type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
         />
 
         <Button type="button" onClick={() => onClose()} variant="contained">
